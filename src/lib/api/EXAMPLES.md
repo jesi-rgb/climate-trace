@@ -342,47 +342,41 @@ if (result.error) {
 }
 ```
 
-### Example 10: Caching Layer
+### Example 10: Built-in Caching
 
 ```typescript
-import { ct } from '$lib/api';
+import { ct, apiCache } from '$lib/api';
 
-class CachedApiClient {
-	private cache = new Map<string, { data: unknown; timestamp: number }>();
-	private ttl = 5 * 60 * 1000; // 5 minutes
+// Automatic caching - no changes needed!
+const countries = await ct('getCountries', undefined);
+const sectors = await ct('getSectors', undefined);
 
-	async get<K extends Parameters<typeof ct>[0]>(
-		endpoint: K,
-		params: Parameters<typeof ct>[1]
-	) {
-		const key = JSON.stringify({ endpoint, params });
-		const cached = this.cache.get(key);
+// Cache is automatically used on repeat calls
+const countriesAgain = await ct('getCountries', undefined); // Served from cache
 
-		if (cached && Date.now() - cached.timestamp < this.ttl) {
-			return cached.data;
-		}
+// Cache management
+apiCache.clear('definitions'); // Clear all definitions cache
+apiCache.invalidate('getCountryDetails', { country: 'USA' }); // Clear specific entry
+apiCache.clear(); // Clear all cache
 
-		const data = await ct(endpoint, params);
-		this.cache.set(key, { data, timestamp: Date.now() });
-
-		return data;
-	}
-
-	clear() {
-		this.cache.clear();
-	}
-}
-
-export const cachedApi = new CachedApiClient();
-
-// Usage
-const sources = await cachedApi.get('getSources', { year: 2024 });
+// Get cache statistics
+const stats = apiCache.getStats();
+console.log(`Cache hit rate: ${stats.hitRate * 100}%`);
+console.log(`Cached entries: ${stats.size}`);
 ```
+
+**Cache TTLs by endpoint type:**
+
+- **Definitions** (1 hour): countries, sectors, gases, continents, country groups
+- **Reference** (30 min): cities, admins, owners
+- **Dynamic** (5 min): country rankings, aggregated emissions
+- **No cache**: sources, source details (always fresh)
 
 ## Tips
 
 1. **Batch requests**: Use `Promise.all()` for independent API calls
 2. **Error handling**: Always wrap API calls in try-catch blocks
 3. **Type inference**: Let TypeScript infer response types automatically
-4. **Caching**: Consider caching for frequently accessed data
+4. **Built-in caching**: Automatic caching for static data (countries, sectors, etc.)
 5. **Pagination**: Use `limit` and `offset` parameters for large result sets
+6. **Cache control**: Use `apiCache.clear()` to invalidate stale data when needed

@@ -23,7 +23,7 @@
 		open = $bindable(false),
 		inputProps,
 		contentProps,
-		type,
+		type = 'single',
 		placeholder = 'Search...',
 		emptyMessage = 'No results found.',
 		Icon,
@@ -33,10 +33,9 @@
 	}: Props = $props();
 
 	let searchValue = $state('');
-	$inspect(searchValue);
 
 	const filteredItems = $derived.by(() => {
-		if (searchValue === '') return items;
+		if (!searchValue || searchValue === '') return items;
 		return items.filter((item) => item.label.toLowerCase().includes(searchValue.toLowerCase()));
 	});
 
@@ -45,7 +44,9 @@
 	}
 
 	function handleOpenChange(newOpen: boolean) {
-		if (!newOpen) searchValue = '';
+		if (!newOpen) {
+			searchValue = '';
+		}
 	}
 
 	const mergedRootProps = $derived(mergeProps(restProps, { onOpenChange: handleOpenChange }));
@@ -55,7 +56,7 @@
 <Combobox.Root {type} {items} bind:value={value as never} bind:open {...mergedRootProps}>
 	<div class="relative">
 		{#if Icon}
-			<Icon class=" absolute left-3 top-1/2 -translate-y-1/2 z-10" />
+			<Icon class="absolute left-3 top-1/2 -translate-y-1/2 z-10" />
 		{/if}
 
 		<Combobox.Input

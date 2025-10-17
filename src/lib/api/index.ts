@@ -26,6 +26,9 @@ export {
 	getCountryRankings
 } from './client';
 
+// Export cache utilities
+export { apiCache } from './cache';
+
 // Export type utilities
 export type { EndpointKey, InferParams, InferResponse } from './endpoints';
 

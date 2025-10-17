@@ -8,6 +8,7 @@ Type-safe, validated API client for Climate TRACE v7 API with full TypeScript su
 - ✅ **Runtime validation** - Critical endpoints validate responses with Valibot
 - ✅ **Autocomplete** - Full IDE autocomplete for all API endpoints
 - ✅ **Error handling** - Comprehensive error handling with custom error types
+- ✅ **Built-in caching** - Automatic intelligent caching for static/reference data
 - ✅ **20+ endpoints** - Complete coverage of Climate TRACE API v7
 - ✅ **Zero guesswork** - No manual type assertions needed
 
@@ -160,6 +161,35 @@ sources[0].invalidField; // ❌ Type error
 - **✅ Fully Validated**: Critical endpoints (sources, emissions, rankings) validate both params and responses at runtime
 - **📝 Typed Only**: Definition endpoints have TypeScript types but no runtime validation (faster, simpler data)
 
+## Caching
+
+The client automatically caches static and reference data to improve performance:
+
+```typescript
+import { ct, apiCache } from '$lib/api';
+
+// Automatic caching - no changes needed!
+const countries = await ct('getCountries', undefined); // API call
+const countriesAgain = await ct('getCountries', undefined); // Cached (instant)
+
+// Cache management
+apiCache.clear('definitions'); // Clear all definitions cache
+apiCache.invalidate('getCountryDetails', { country: 'USA' }); // Clear specific entry
+apiCache.clear(); // Clear entire cache
+
+// Cache statistics
+const stats = apiCache.getStats();
+console.log(`Hit rate: ${stats.hitRate * 100}%`);
+console.log(`Entries: ${stats.size}`);
+```
+
+**Cache TTLs by data type:**
+
+- **Definitions (1 hour)**: countries, sectors, gases, continents, country groups
+- **Reference (30 min)**: cities, admins, owners
+- **Dynamic (5 min)**: country rankings, aggregated emissions
+- **No cache**: sources, source details (always fresh)
+
 ## Error Handling
 
 ```typescript
@@ -209,7 +239,9 @@ src/lib/api/
 │   └── index.ts      # Re-exports
 ├── endpoints.ts      # Endpoint registry with types
 ├── client.ts         # Generic API client with validation
+├── cache.ts          # Intelligent caching layer
 ├── index.ts          # Public API
+├── EXAMPLES.md       # Real-world usage examples
 └── README.md         # This file
 ```
 

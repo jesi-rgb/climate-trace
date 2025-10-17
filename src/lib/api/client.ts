@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 import { endpoints, type EndpointKey, type InferParams, type InferResponse } from './endpoints';
+import { apiCache } from './cache';
 
 const BASE_URL = 'https://api.climatetrace.org';
 
@@ -17,14 +18,19 @@ export class ApiError extends Error {
 /**
  * Type-safe API client for Climate TRACE API
  * Automatically validates params and responses based on endpoint definition
+ * Includes automatic caching for static/reference data
  */
 export async function ct<K extends EndpointKey>(
 	key: K,
 	params?: InferParams<K>
 ): Promise<InferResponse<K>> {
+	const cached = apiCache.get<InferResponse<K>>(key, params);
+	if (cached !== null) {
+		return cached;
+	}
+
 	const endpoint = endpoints[key];
 
-	// 1. Validate input params (if schema exists)
 	if (endpoint.paramsSchema && params !== undefined) {
 		try {
 			v.parse(endpoint.paramsSchema, params);
@@ -33,7 +39,6 @@ export async function ct<K extends EndpointKey>(
 		}
 	}
 
-	// 2. Build URL with path params and query params
 	let url = `${BASE_URL}${endpoint.path}`;
 	const queryParams = new URLSearchParams();
 
@@ -43,12 +48,9 @@ export async function ct<K extends EndpointKey>(
 		Object.entries(paramsObj).forEach(([paramKey, value]) => {
 			if (value === undefined) return;
 
-			// Handle path parameters (e.g., :id, :sector)
 			if (url.includes(`:${paramKey}`)) {
 				url = url.replace(`:${paramKey}`, String(value));
-			}
-			// Handle query parameters
-			else {
+			} else {
 				if (Array.isArray(value)) {
 					queryParams.set(paramKey, value.join(','));
 				} else {
@@ -61,7 +63,6 @@ export async function ct<K extends EndpointKey>(
 	const queryString = queryParams.toString();
 	const fullUrl = queryString ? `${url}?${queryString}` : url;
 
-	// 3. Fetch from API
 	let response: Response;
 	try {
 		response = await fetch(fullUrl);
@@ -69,7 +70,6 @@ export async function ct<K extends EndpointKey>(
 		throw new Error(`Network error calling ${key}: ${error}`);
 	}
 
-	// 4. Handle HTTP errors
 	if (!response.ok) {
 		const errorText = await response.text().catch(() => 'Unknown error');
 		throw new ApiError(
@@ -79,7 +79,6 @@ export async function ct<K extends EndpointKey>(
 		);
 	}
 
-	// 5. Parse JSON response
 	let data: unknown;
 	try {
 		data = await response.json();
@@ -87,18 +86,19 @@ export async function ct<K extends EndpointKey>(
 		throw new Error(`Failed to parse JSON response from ${key}: ${error}`);
 	}
 
-	// 6. Validate response (if schema exists)
 	if (endpoint.responseSchema) {
 		try {
-			return v.parse(endpoint.responseSchema, data) as InferResponse<K>;
+			data = v.parse(endpoint.responseSchema, data);
 		} catch (error) {
 			console.error(`Response validation failed for ${key}:`, error);
 			throw new Error(`Invalid response from ${key}: ${error}`);
 		}
 	}
 
-	// 7. Return unvalidated response for endpoints without schemas
-	return data as InferResponse<K>;
+	const result = data as InferResponse<K>;
+	apiCache.set(key, params, result);
+
+	return result;
 }
 
 /**
