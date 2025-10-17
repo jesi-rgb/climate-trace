@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import Header from '$lib/components/ui/Header.svelte';
 
 	let { children } = $props();
 </script>
@@ -13,5 +14,6 @@
 	class="selection:bg-primary selection:text-primary-content w-[90%]
 	md:max-w-7xl my-10 mx-auto"
 >
+	<Header />
 	{@render children?.()}
 </main>
