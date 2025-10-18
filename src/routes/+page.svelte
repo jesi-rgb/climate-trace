@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ct } from '$lib/api';
 	import { fN, formatSector } from '$lib/utils';
+	import SectorData from '$lib/components/SectorData.svelte';
 
 	let topSources = $state<any[]>([]);
 	let countryRankings = $state<any[]>([]);
@@ -13,7 +14,6 @@
 	let topCountries = $state<any[]>([]);
 	let countries = $state<any[]>([]);
 	let continents = $state<string[]>([]);
-	let topSourcesBySector = $state<Record<string, any[]>>({});
 	let loading = $state(true);
 
 	async function loadDashboard() {
@@ -27,11 +27,7 @@
 				gasesRes,
 				emissionsRes,
 				countriesRes,
-				continentsRes,
-				powerSourcesRes,
-				transportSourcesRes,
-				fossilSourcesRes,
-				manufacturingSourcesRes
+				continentsRes
 			] = await Promise.all([
 				ct('getSources', { year: 2022, limit: 30 }),
 				ct('getCountryRankings', { gas: 'co2e_100yr', start: '2022', end: '2022' }),
@@ -40,11 +36,7 @@
 				ct('getGases', undefined),
 				ct('getAggregatedEmissions', { year: 2022 }),
 				ct('getCountries', undefined),
-				ct('getContinents', undefined),
-				ct('getSources', { year: 2022, sectors: ['power'], limit: 12 }),
-				ct('getSources', { year: 2022, sectors: ['transportation'], limit: 12 }),
-				ct('getSources', { year: 2022, sectors: ['fossil-fuel-operations'], limit: 12 }),
-				ct('getSources', { year: 2022, sectors: ['manufacturing'], limit: 12 })
+				ct('getContinents', undefined)
 			]);
 
 			topSources = sourcesRes || [];
@@ -55,13 +47,6 @@
 			globalEmissions = emissionsRes;
 			countries = countriesRes || [];
 			continents = continentsRes || [];
-
-			topSourcesBySector = {
-				power: powerSourcesRes || [],
-				transportation: transportSourcesRes || [],
-				fossil: fossilSourcesRes || [],
-				manufacturing: manufacturingSourcesRes || []
-			};
 
 			if (
 				emissionsRes?.sectors?.summaries &&
@@ -90,7 +75,7 @@
 	loadDashboard();
 </script>
 
-<main class="max-w-[2000px] mx-auto">
+<main class="mx-auto">
 	{#if loading}
 		<div class="flex min-h-[60vh] items-center justify-center">
 			<div class="text-center">
@@ -100,11 +85,7 @@
 		</div>
 	{:else}
 		<div class="grid lg:grid-cols-6 join">
-			<div
-				class="bg-base-200 border border-subtle join-item flex
-				flex-col
-				 justify-center p-2"
-			>
+			<div class="bg-base-200 border border-subtle join-item p-2">
 				<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide">Global Emissions</h2>
 				<div class="mt-1">
 					<div class="font-bold text-primary">
@@ -114,7 +95,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle join-item">
+			<div class="bg-base-200 border border-subtle join-item p-2">
 				<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide">Sources</h2>
 				<div class="mt-1">
 					<div class="font-bold text-secondary">
@@ -124,7 +105,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle join-item">
+			<div class="bg-base-200 border border-subtle join-item p-2">
 				<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide">Sectors</h2>
 				<div class="mt-1">
 					<div class="font-bold text-accent">{sectors.length}</div>
@@ -132,7 +113,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle join-item">
+			<div class="bg-base-200 border border-subtle join-item p-2">
 				<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide">Subsectors</h2>
 				<div class="mt-1">
 					<div class="font-bold text-warning">{subsectors.length}</div>
@@ -140,7 +121,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle join-item">
+			<div class="bg-base-200 border border-subtle join-item p-2">
 				<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide">Countries</h2>
 				<div class="mt-1">
 					<div class="font-bold text-info">{countries.length}</div>
@@ -148,7 +129,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle join-item">
+			<div class="bg-base-200 border border-subtle join-item p-2">
 				<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide">Continents</h2>
 				<div class="mt-1">
 					<div class="font-bold text-success">{continents.length}</div>
@@ -157,8 +138,8 @@
 			</div>
 		</div>
 
-		<div class="mt-3 grid gap-3 lg:grid-cols-4">
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
+		<div class="grid lg:grid-cols-4 join">
+			<div class="bg-base-200 border border-t-0 border-subtle join-item p-2.5">
 				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">
 					Top Countries by Emissions
 				</h2>
@@ -181,7 +162,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
+			<div class="bg-base-200 border border-t-0 border-subtle join-item p-2.5">
 				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">Emissions by Sector</h2>
 				<div class="space-y-1">
 					{#each sectorEmissions as sector}
@@ -200,7 +181,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
+			<div class="bg-base-200 border border-subtle border-t-0 join-item p-2.5">
 				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">Top Subsectors</h2>
 				<div class="space-y-1">
 					{#each subsectorEmissions as subsector}
@@ -219,7 +200,7 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
+			<div class="bg-base-200 border border-subtle border-t-0 join-item p-2.5">
 				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">Regional Leaders</h2>
 				<div class="grid grid-cols-2 gap-1.5">
 					{#each topCountries as country}
@@ -239,8 +220,8 @@
 			</div>
 		</div>
 
-		<div class="mt-3 grid gap-3 lg:grid-cols-3">
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
+		<div class="grid lg:grid-cols-3 join">
+			<div class="bg-base-200 border border-subtle join-item p-2.5">
 				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">
 					Top Emission Sources (All)
 				</h2>
@@ -268,41 +249,10 @@
 				</div>
 			</div>
 
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
-				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">Power Sector Sources</h2>
-				<div class="space-y-1">
-					{#each topSourcesBySector.power as source}
-						<div class="rounded border border-subtle bg-base-100 p-1.5">
-							<div class="flex items-start justify-between">
-								<div class="flex-1 min-w-0">
-									<h3 class="text-[10px] font-semibold text-base-content truncate">
-										{source.name}
-									</h3>
-									<p class="text-[9px] text-muted">{source.country}</p>
-								</div>
-								<div class="text-right ml-2 shrink-0">
-									<div class="font-mono text-[10px] font-bold text-warning">
-										{fN(source.emissionsQuantity)}
-									</div>
-									<div class="text-[8px] text-muted">tonnes</div>
-								</div>
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
+			<SectorData {sectors} />
 
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
-				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">All Monitored Sectors</h2>
-				<div class="flex flex-wrap gap-1 mb-2">
-					{#each sectors as sector}
-						<div class="badge badge-primary badge-sm text-[9px]">
-							{formatSector(sector)}
-						</div>
-					{/each}
-				</div>
-
-				<h3 class="mt-2 text-[11px] font-semibold text-base-content mb-1">Continents</h3>
+			<div class="bg-base-200 border border-subtle join-item p-2.5">
+				<h3 class="text-[11px] font-semibold text-base-content mb-1">Continents</h3>
 				<div class="flex flex-wrap gap-1 mb-2">
 					{#each continents as continent}
 						<div class="badge badge-accent badge-sm text-[9px]">{continent}</div>
@@ -314,80 +264,6 @@
 					{#each ['co2', 'ch4', 'n2o', 'co2e_100yr', 'co2e_20yr'] as gas}
 						<div class="badge badge-secondary badge-sm text-[9px]">
 							{gas.toUpperCase()}
-						</div>
-					{/each}
-				</div>
-			</div>
-		</div>
-
-		<div class="mt-3 grid gap-3 lg:grid-cols-3">
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
-				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">Transportation Sources</h2>
-				<div class="space-y-1">
-					{#each topSourcesBySector.transportation.slice(0, 12) as source}
-						<div class="rounded border border-subtle bg-base-100 p-1.5">
-							<div class="flex items-start justify-between">
-								<div class="flex-1 min-w-0">
-									<h3 class="text-[10px] font-semibold text-base-content truncate">
-										{source.name}
-									</h3>
-									<p class="text-[9px] text-muted">{source.country}</p>
-								</div>
-								<div class="text-right ml-2 shrink-0">
-									<div class="font-mono text-[10px] font-bold text-info">
-										{fN(source.emissionsQuantity)}
-									</div>
-									<div class="text-[8px] text-muted">tonnes</div>
-								</div>
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
-
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
-				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">Fossil Fuel Operations</h2>
-				<div class="space-y-1">
-					{#each topSourcesBySector.fossil.slice(0, 12) as source}
-						<div class="rounded border border-subtle bg-base-100 p-1.5">
-							<div class="flex items-start justify-between">
-								<div class="flex-1 min-w-0">
-									<h3 class="text-[10px] font-semibold text-base-content truncate">
-										{source.name}
-									</h3>
-									<p class="text-[9px] text-muted">{source.country}</p>
-								</div>
-								<div class="text-right ml-2 shrink-0">
-									<div class="font-mono text-[10px] font-bold text-error">
-										{fN(source.emissionsQuantity)}
-									</div>
-									<div class="text-[8px] text-muted">tonnes</div>
-								</div>
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
-
-			<div class="bg-base-200 border border-subtle rounded-lg p-2.5">
-				<h2 class="text-[11px] font-semibold text-base-content mb-1.5">Manufacturing Sources</h2>
-				<div class="space-y-1">
-					{#each topSourcesBySector.manufacturing.slice(0, 12) as source}
-						<div class="rounded border border-subtle bg-base-100 p-1.5">
-							<div class="flex items-start justify-between">
-								<div class="flex-1 min-w-0">
-									<h3 class="text-[10px] font-semibold text-base-content truncate">
-										{source.name}
-									</h3>
-									<p class="text-[9px] text-muted">{source.country}</p>
-								</div>
-								<div class="text-right ml-2 shrink-0">
-									<div class="font-mono text-[10px] font-bold text-success">
-										{fN(source.emissionsQuantity)}
-									</div>
-									<div class="text-[8px] text-muted">tonnes</div>
-								</div>
-							</div>
 						</div>
 					{/each}
 				</div>
