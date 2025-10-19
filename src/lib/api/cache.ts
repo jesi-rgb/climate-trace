@@ -1,4 +1,4 @@
-import type { EndpointKey } from './endpoints';
+import type { EndpointKey, PangeaEndpointKey } from './endpoints';
 
 type CacheEntry = {
 	data: unknown;
@@ -58,19 +58,25 @@ export class ApiCache {
 	private hits = 0;
 	private misses = 0;
 
-	private getCacheKey(endpoint: EndpointKey, params?: unknown): string {
+	private getCacheKey(endpoint: EndpointKey | PangeaEndpointKey, params?: unknown): string {
 		if (!params) {
 			return endpoint;
 		}
 		return `${endpoint}:${JSON.stringify(params, Object.keys(params).sort())}`;
 	}
 
-	private shouldCache(endpoint: EndpointKey): boolean {
-		return ENDPOINT_CACHE_STRATEGY[endpoint] !== 'none';
+	private shouldCache(endpoint: EndpointKey | PangeaEndpointKey): boolean {
+		if (endpoint.startsWith('get') && endpoint.includes('Country')) {
+			return true;
+		}
+		return ENDPOINT_CACHE_STRATEGY[endpoint as EndpointKey] !== 'none';
 	}
 
-	private getTTL(endpoint: EndpointKey): number {
-		const category = ENDPOINT_CACHE_STRATEGY[endpoint];
+	private getTTL(endpoint: EndpointKey | PangeaEndpointKey): number {
+		if (endpoint.startsWith('get') && endpoint.includes('Country')) {
+			return CACHE_CONFIG.definitions;
+		}
+		const category = ENDPOINT_CACHE_STRATEGY[endpoint as EndpointKey];
 		return CACHE_CONFIG[category];
 	}
 
@@ -78,7 +84,7 @@ export class ApiCache {
 		return Date.now() - entry.timestamp < entry.ttl;
 	}
 
-	get<T>(endpoint: EndpointKey, params?: unknown): T | null {
+	get<T>(endpoint: EndpointKey | PangeaEndpointKey, params?: unknown): T | null {
 		if (!this.shouldCache(endpoint)) {
 			return null;
 		}
@@ -101,7 +107,7 @@ export class ApiCache {
 		return entry.data as T;
 	}
 
-	set<T>(endpoint: EndpointKey, params: unknown, data: T): void {
+	set<T>(endpoint: EndpointKey | PangeaEndpointKey, params: unknown, data: T): void {
 		if (!this.shouldCache(endpoint)) {
 			return;
 		}

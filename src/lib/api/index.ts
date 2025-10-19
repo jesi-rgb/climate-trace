@@ -18,6 +18,7 @@
 // Export main API client
 export {
 	ct,
+	pangea,
 	apiCall,
 	ApiError,
 	getTopSources,
@@ -26,11 +27,16 @@ export {
 	getCountryRankings
 } from './client';
 
-// Export cache utilities
 export { apiCache } from './cache';
 
-// Export type utilities
-export type { EndpointKey, InferParams, InferResponse } from './endpoints';
+export type {
+	EndpointKey,
+	InferParams,
+	InferResponse,
+	PangeaEndpointKey,
+	InferPangeaParams,
+	InferPangeaResponse
+} from './endpoints';
 
 // Export all generated types
 export * from './schemas/generated';
