@@ -78,7 +78,7 @@
 							{...props}
 							transition:fly={transitionConfig}
 							class="border-subtle bg-base-100 shadow-xl z-50
-							max-h-96 w-full rounded-box border p-2"
+							max-h-96 w-[var(--bits-combobox-anchor-width)] rounded-box border p-2"
 						>
 							{#if showScrollButtons}
 								<Combobox.ScrollUpButton class="flex w-full items-center justify-center py-1">

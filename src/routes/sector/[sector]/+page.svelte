@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { fN } from '$lib/utils';
 	import { getSectorDetails, getSectorEmissions, getSectorSources } from '../../api/sector.remote';
 
-	const sector = page.params.sector;
+	const sector = page.params.sector!;
 	const details = await getSectorDetails(sector);
 	const emissions = await getSectorEmissions(sector);
 	const sources = await getSectorSources({ sector, limit: 50 });
-
-	const formatEmissions = (num: number) =>
-		num.toLocaleString('en-US', { maximumFractionDigits: 2 });
 </script>
 
 <div class="container mx-auto p-4">
@@ -17,7 +15,7 @@
 	<div class="mb-8">
 		<h2 class="mb-4 text-2xl font-semibold">Total Emissions</h2>
 		<div class="stat">
-			<div class="stat-value">{formatEmissions(emissions.emissionsQuantity)}</div>
+			<div class="stat-value">{emissions.subsectors.summaries[0].emissionsQuantity}</div>
 			<div class="stat-desc">tonnes CO₂e</div>
 		</div>
 	</div>
@@ -47,8 +45,8 @@
 					{#each sources as source}
 						<tr>
 							<td>
-								<a href="/source/{source.sourceId}" class="link link-hover">
-									{source.sourceName || 'Unknown'}
+								<a href="/source/{source.id}" class="link link-hover">
+									{source.name || 'Unknown'}
 								</a>
 							</td>
 							<td>
@@ -56,8 +54,8 @@
 									{source.country}
 								</a>
 							</td>
-							<td>{source.subSector}</td>
-							<td>{formatEmissions(source.emissionsQuantity)}</td>
+							<td>{source.subsector}</td>
+							<td>{source.emissionsQuantity}</td>
 						</tr>
 					{/each}
 				</tbody>

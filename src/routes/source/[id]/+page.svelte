@@ -11,7 +11,7 @@
 
 <div class="container mx-auto p-4">
 	{#if !source}
-		<div class="flex min-h-[60vh] items-center justify-center">
+		<div class="flex my-20 items-center justify-center">
 			<div class="text-center">
 				<div class="loading loading-spinner loading-lg text-primary"></div>
 				<p class="mt-4 text-xs text-muted">Loading source data...</p>
@@ -20,7 +20,7 @@
 	{:else}
 		<h1 class="mb-6 text-3xl font-bold">{source.name || 'Unknown Source'}</h1>
 
-		<div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+		<div class="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 			<div class="stat bg-base-200">
 				<div class="stat-title">Country</div>
 				<div class="stat-value text-2xl">

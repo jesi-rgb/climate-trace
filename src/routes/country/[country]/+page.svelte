@@ -6,14 +6,22 @@
 	const formatEmissions = (num: number) =>
 		num.toLocaleString('en-US', { maximumFractionDigits: 2 });
 
-	const data = await getCountryData(page.params?.country);
+	let country = $derived(page.params.country!);
+	let data = $derived(await getCountryData(country));
 </script>
 
-{#if !data}
+{#if $effect.pending()}
 	<div class="flex min-h-[60vh] items-center justify-center">
 		<div class="text-center">
 			<div class="loading loading-spinner loading-lg text-primary"></div>
 			<p class="mt-4 text-xs text-muted">Loading country data...</p>
+		</div>
+	</div>
+{:else if !data}
+	<div class="flex my-20 items-center justify-center">
+		<div class="text-center">
+			<p class="text-error">Country not found</p>
+			<a href="/" class="link">Try going back</a>
 		</div>
 	</div>
 {:else}
