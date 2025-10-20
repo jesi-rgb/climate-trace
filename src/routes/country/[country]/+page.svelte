@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { fN } from '$lib/utils';
 	import { getCountryData } from '../../api/country.remote';
-
-	const formatNumber = (num: number) => num.toLocaleString('en-US', { maximumFractionDigits: 0 });
-	const formatEmissions = (num: number) =>
-		num.toLocaleString('en-US', { maximumFractionDigits: 2 });
 
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
@@ -31,18 +28,18 @@
 		<div class="flex flex-col stats rounded-none">
 			<div class="">
 				<h2 class="stat-desc">Emissions Per Capita</h2>
-				<p class="stat-value">{formatEmissions(data.emissionsPerCapita)}</p>
+				<p class="stat-value">{fN(data.emissionsPerCapita)}</p>
 				<p class="stat-title">tonnes CO₂e per person</p>
 			</div>
 
 			<div class="stat">
 				<h2 class="stat-title">Population</h2>
-				<p class="stat-value">{formatNumber(data.population)}</p>
+				<p class="stat-value">{fN(data.population)}</p>
 			</div>
 
 			<div class="stat">
 				<h2 class="stat-title">Total Emissions</h2>
-				<p class="stat-value">{formatEmissions(data.totalEmissions)}</p>
+				<p class="stat-value">{fN(data.totalEmissions)}</p>
 				<p class="stat-desc">tonnes CO₂e</p>
 			</div>
 

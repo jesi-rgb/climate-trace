@@ -49,8 +49,25 @@
 		}
 	}
 
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter' && filteredItems.length > 0 && !filteredItems[0].disabled) {
+			if (type === 'single') {
+				value = filteredItems[0].value;
+			} else {
+				const currentValues = (value as string[]) || [];
+				if (!currentValues.includes(filteredItems[0].value)) {
+					value = [...currentValues, filteredItems[0].value] as never;
+				}
+			}
+			open = false;
+			e.preventDefault();
+		}
+	}
+
 	const mergedRootProps = $derived(mergeProps(restProps, { onOpenChange: handleOpenChange }));
-	const mergedInputProps = $derived(mergeProps(inputProps, { oninput: handleInput }));
+	const mergedInputProps = $derived(
+		mergeProps(inputProps, { oninput: handleInput, onkeydown: handleKeydown })
+	);
 </script>
 
 <Combobox.Root {type} {items} bind:value={value as never} bind:open {...mergedRootProps}>

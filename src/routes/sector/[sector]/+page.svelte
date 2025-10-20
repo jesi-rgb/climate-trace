@@ -15,7 +15,7 @@
 	<div class="mb-8">
 		<h2 class="mb-4 text-2xl font-semibold">Total Emissions</h2>
 		<div class="stat">
-			<div class="stat-value">{emissions.subsectors.summaries[0].emissionsQuantity}</div>
+			<div class="stat-value">{fN(emissions.subsectors.summaries[0].emissionsQuantity)}</div>
 			<div class="stat-desc">tonnes CO₂e</div>
 		</div>
 	</div>
@@ -38,7 +38,7 @@
 						<th>Source Name</th>
 						<th>Country</th>
 						<th>Subsector</th>
-						<th>Emissions</th>
+						<th class="text-right">Emissions</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -55,7 +55,7 @@
 								</a>
 							</td>
 							<td>{source.subsector}</td>
-							<td>{source.emissionsQuantity}</td>
+							<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
 						</tr>
 					{/each}
 				</tbody>

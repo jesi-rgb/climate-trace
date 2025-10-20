@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatSector } from '$lib/utils';
 	import { getSectors } from '../api/sector.remote';
 
 	const sectors = await getSectors();
@@ -19,7 +20,7 @@
 			{#each sectors as sector}
 				<a href="/sector/{sector}" class="card bg-base-200 transition-all hover:bg-base-300">
 					<div class="card-body">
-						<h2 class="card-title">{sector}</h2>
+						<h2 class="card-title">{formatSector(sector)}</h2>
 					</div>
 				</a>
 			{/each}

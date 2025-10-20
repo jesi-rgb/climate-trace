@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { fN } from '$lib/utils';
 	import { getAllRankings } from '../api/rankings.remote';
 
@@ -9,7 +9,7 @@
 	const data = await getAllRankings();
 	console.log(data);
 
-	const currentPage = $derived(parseInt($page.url.searchParams.get('page') || '1'));
+	const currentPage = $derived(parseInt(page.url.searchParams.get('page') || '1'));
 	const totalPages = $derived(Math.ceil((data?.rankings.length || 0) / ITEMS_PER_PAGE));
 	const startIndex = $derived((currentPage - 1) * ITEMS_PER_PAGE);
 	const endIndex = $derived(startIndex + ITEMS_PER_PAGE);
