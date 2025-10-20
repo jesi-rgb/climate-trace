@@ -4,15 +4,14 @@
 	import { goto } from '$app/navigation';
 	import { ct } from '$lib/api';
 	import type { Country } from '$lib/api/schemas/generated';
+	import { onMount } from 'svelte';
 
 	let countries = $state<Country[]>([]);
 	let selectedCountry = $state<string | undefined>(undefined);
 	let open = $state(false);
 
-	$effect(() => {
-		ct('getCountries').then((data) => {
-			countries = data;
-		});
+	onMount(async () => {
+		countries = await ct('getCountries');
 	});
 
 	$effect(() => {

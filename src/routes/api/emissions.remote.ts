@@ -73,17 +73,17 @@ export const getCountryData = query(v.string(), async (countryCode) => {
 		throw new Error('Country not found');
 	}
 
-	const pangeaCountry = await pangea('getCountryInfo', { code: countryCode });
+	const countryInfo = await pangea('getCountryInfo', { code: countryCode });
 
 	const totalEmissions = countryRanking.emissionsQuantity;
-	const emissionsPerCapita = pangeaCountry.pop_est > 0 ? totalEmissions / pangeaCountry.pop_est : 0;
+	const emissionsPerCapita = countryInfo.pop_est > 0 ? totalEmissions / countryInfo.pop_est : 0;
 
 	return {
-		name: pangeaCountry.name_long,
-		code: pangeaCountry.adm0_a3,
-		population: pangeaCountry.pop_est,
-		region: pangeaCountry.region_un,
-		subregion: pangeaCountry.subregion,
+		name: countryInfo.name_long,
+		code: countryInfo.adm0_a3,
+		population: countryInfo.pop_est,
+		region: countryInfo.region_un,
+		subregion: countryInfo.subregion,
 		totalEmissions,
 		emissionsPerCapita
 	};
