@@ -1,53 +1,303 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { fN } from '$lib/utils';
+	import { fN, formatSector } from '$lib/utils';
 	import { getCountryData } from '../../api/country.remote';
+	import { getAllRankings } from '../../api/rankings.remote';
+	import { getAggregatedEmissions } from '../../api/emissions.remote';
+	import { searchCities } from '../../api/cities.remote';
+	import { getTopSources } from '../../api/source.remote';
+	import {
+		Lightning,
+		Users,
+		Globe,
+		XCircle,
+		Trophy,
+		Factory,
+		Buildings,
+		ChartLine,
+		MapPin
+	} from 'phosphor-svelte';
 
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
+	let rankings = $derived(await getAllRankings());
+	let countryEmissions = $derived(await getAggregatedEmissions({ gadmId: country }));
+	let cities = $derived(await searchCities({ country, limit: 5 }));
+	let topSources = $derived(await getTopSources({ limit: 10 }));
+
+	let countryRankingIndex = $derived(
+		rankings?.rankings.findIndex((r) => r.country === country) ?? -1
+	);
+	let rankingsContext = $derived.by(() => {
+		if (countryRankingIndex === -1 || !rankings) return [];
+		const start = Math.max(0, countryRankingIndex - 3);
+		const end = Math.min(rankings.rankings.length, countryRankingIndex + 4);
+		return rankings.rankings.slice(start, end).map((r, idx) => ({
+			...r,
+			rank: start + idx + 1,
+			isCurrentCountry: r.country === country
+		}));
+	});
+
+	let topSectors = $derived.by(() => {
+		if (!countryEmissions?.sectors?.summaries) return [];
+		return countryEmissions.sectors.summaries
+			.sort((a, b) => b.emissionsQuantity - a.emissionsQuantity)
+			.slice(0, 5);
+	});
+
+	let emissionsTimeseries = $derived.by(() => {
+		if (!countryEmissions?.totals?.timeseries) return [];
+		const yearlyData = new Map<number, number>();
+		countryEmissions.totals.timeseries.forEach((t) => {
+			const current = yearlyData.get(t.year) || 0;
+			yearlyData.set(t.year, current + t.emissionsQuantity);
+		});
+		return Array.from(yearlyData.entries())
+			.sort((a, b) => a[0] - b[0])
+			.map(([year, emissions]) => ({ year, emissions }));
+	});
+
+	let countrySources = $derived.by(() => {
+		if (!topSources) return [];
+		return topSources.filter((s) => s.country === country).slice(0, 5);
+	});
 </script>
 
 {#if $effect.pending()}
 	<div class="flex min-h-[60vh] items-center justify-center">
 		<div class="text-center">
 			<div class="loading loading-spinner loading-lg text-primary"></div>
-			<p class="mt-4 text-xs text-muted">Loading country data...</p>
+			<p class="mt-4 text-xs opacity-60">Loading country data...</p>
 		</div>
 	</div>
 {:else if !data}
-	<div class="flex my-20 items-center justify-center">
-		<div class="text-center">
-			<p class="text-error">Country not found</p>
-			<a href="/" class="link">Try going back</a>
+	<div class="flex min-h-[60vh] items-center justify-center">
+		<div class="alert alert-error max-w-md">
+			<XCircle size={24} weight="bold" />
+			<div>
+				<h3 class="font-bold">Country not found</h3>
+				<a href="/" class="link link-hover">Return to home</a>
+			</div>
 		</div>
 	</div>
 {:else}
-	<div class="">
-		<h1 class="font-bold text-xl">{data.name}</h1>
-
-		<div class="flex flex-col stats rounded-none">
-			<div class="">
-				<h2 class="stat-desc">Emissions Per Capita</h2>
-				<p class="stat-value">{fN(data.emissionsPerCapita)}</p>
-				<p class="stat-title">tonnes CO₂e per person</p>
+	<div class="container mx-auto max-w-7xl px-4 py-8">
+		<div class="mb-8">
+			<div class="breadcrumbs text-sm mb-4">
+				<ul>
+					<li><a href="/" class="link link-hover">Home</a></li>
+					<li>Countries</li>
+					<li>{data.name}</li>
+				</ul>
 			</div>
 
-			<div class="stat">
-				<h2 class="stat-title">Population</h2>
-				<p class="stat-value">{fN(data.population)}</p>
+			<div class="flex items-center gap-4">
+				<h1 class="text-4xl font-bold">{data.name}</h1>
+				<div class="badge badge-primary badge-lg">{data.subregion}</div>
+			</div>
+			<p class="text-lg opacity-70 mt-2">{data.region}</p>
+		</div>
+
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+			<div class="card bg-gradient-to-br from-error/10 to-error/5 border border-error/20">
+				<div class="card-body">
+					<div class="flex items-center gap-2 mb-2">
+						<Lightning size={20} weight="fill" class="text-error" />
+						<h2 class="card-title text-sm font-medium opacity-70">Emissions Per Capita</h2>
+					</div>
+					<p class="text-4xl font-bold mb-1">{fN(data.emissionsPerCapita)}</p>
+					<p class="text-sm opacity-60">tonnes CO₂e per person</p>
+				</div>
 			</div>
 
-			<div class="stat">
-				<h2 class="stat-title">Total Emissions</h2>
-				<p class="stat-value">{fN(data.totalEmissions)}</p>
-				<p class="stat-desc">tonnes CO₂e</p>
+			<div class="card bg-gradient-to-br from-info/10 to-info/5 border border-info/20">
+				<div class="card-body">
+					<div class="flex items-center gap-2 mb-2">
+						<Users size={20} weight="fill" class="text-info" />
+						<h2 class="card-title text-sm font-medium opacity-70">Population</h2>
+					</div>
+					<p class="text-4xl font-bold mb-1">{fN(data.population)}</p>
+					<p class="text-sm opacity-60">people</p>
+				</div>
 			</div>
 
-			<div class="stat">
-				<h2>Region</h2>
-				<p class="value region">{data.subregion}</p>
-				<p class="unit">{data.region}</p>
+			<div class="card bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20">
+				<div class="card-body">
+					<div class="flex items-center gap-2 mb-2">
+						<Globe size={20} weight="fill" class="text-warning" />
+						<h2 class="card-title text-sm font-medium opacity-70">Total Emissions</h2>
+					</div>
+					<p class="text-4xl font-bold mb-1">{fN(data.totalEmissions)}</p>
+					<p class="text-sm opacity-60">tonnes CO₂e</p>
+				</div>
 			</div>
 		</div>
+
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+			{#if rankingsContext.length > 0}
+				<div class="card bg-base-200 border border-base-300">
+					<div class="card-body">
+						<div class="flex items-center gap-2 mb-4">
+							<Trophy size={24} weight="fill" class="text-primary" />
+							<h2 class="card-title">Global Rankings</h2>
+						</div>
+
+						<div class="overflow-x-auto">
+							<table class="table table-sm">
+								<thead>
+									<tr>
+										<th class="w-16">Rank</th>
+										<th>Country</th>
+										<th class="text-right">Total</th>
+										<th class="text-right">Per Capita</th>
+									</tr>
+								</thead>
+								<tbody>
+									{#each rankingsContext as ranking}
+										<tr class={ranking.isCurrentCountry ? 'bg-primary/10 font-semibold' : ''}>
+											<td class="text-center">
+												{#if ranking.isCurrentCountry}
+													<div class="badge badge-primary badge-sm">{ranking.rank}</div>
+												{:else}
+													{ranking.rank}
+												{/if}
+											</td>
+											<td class="truncate max-w-[120px]">{ranking.name}</td>
+											<td class="text-right tabular-nums text-xs"
+												>{fN(ranking.emissionsQuantity)}</td
+											>
+											<td class="text-right tabular-nums text-xs"
+												>{fN(ranking.emissionsPerCapita)}</td
+											>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+
+						<div class="text-xs opacity-60 mt-2">
+							Showing ±3 countries around {data.name}'s position
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{#if topSectors.length > 0}
+				<div class="card bg-base-200 border border-base-300">
+					<div class="card-body">
+						<div class="flex items-center gap-2 mb-4">
+							<Factory size={24} weight="fill" class="text-secondary" />
+							<h2 class="card-title">Top Emission Sectors</h2>
+						</div>
+
+						<div class="space-y-3">
+							{#each topSectors as sector}
+								<div>
+									<div class="flex justify-between items-center mb-1">
+										<span class="text-sm font-medium">{formatSector(sector.sector)}</span>
+										<span class="text-sm font-bold tabular-nums"
+											>{fN(sector.emissionsQuantity)}</span
+										>
+									</div>
+									<div class="flex items-center gap-2">
+										<progress
+											class="progress progress-secondary w-full"
+											value={sector.percentage}
+											max="100"
+										></progress>
+										<span class="text-xs opacity-60 tabular-nums min-w-[3rem]"
+											>{sector.percentage.toFixed(1)}%</span
+										>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+			{#if emissionsTimeseries.length > 0}
+				<div class="card bg-base-200 border border-base-300">
+					<div class="card-body">
+						<div class="flex items-center gap-2 mb-4">
+							<ChartLine size={24} weight="bold" class="text-accent" />
+							<h2 class="card-title">Emissions Timeline</h2>
+						</div>
+
+						<div class="space-y-2">
+							{#each emissionsTimeseries.slice(-5) as { year, emissions }}
+								<div class="flex justify-between items-center">
+									<span class="text-sm font-medium">{year}</span>
+									<span class="text-sm tabular-nums">{fN(emissions)} tonnes CO₂e</span>
+								</div>
+							{/each}
+						</div>
+
+						<div class="text-xs opacity-60 mt-2">Last 5 years of data available</div>
+					</div>
+				</div>
+			{/if}
+
+			{#if cities && cities.length > 0}
+				<div class="card bg-base-200 border border-base-300">
+					<div class="card-body">
+						<div class="flex items-center gap-2 mb-4">
+							<Buildings size={24} weight="fill" class="text-info" />
+							<h2 class="card-title">Major Cities</h2>
+						</div>
+
+						<div class="space-y-2">
+							{#each cities as city}
+								<div class="flex items-center gap-2">
+									<MapPin size={16} class="opacity-60" />
+									<span class="text-sm">{city.name}</span>
+								</div>
+							{/each}
+						</div>
+
+						<a href="/cities?country={country}" class="btn btn-sm btn-outline mt-4"
+							>View All Cities</a
+						>
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		{#if countrySources.length > 0}
+			<div class="card bg-base-200 border border-base-300">
+				<div class="card-body">
+					<div class="flex items-center gap-2 mb-4">
+						<Factory size={24} weight="bold" class="text-warning" />
+						<h2 class="card-title">Top Emission Sources in {data.name}</h2>
+					</div>
+
+					<div class="overflow-x-auto">
+						<table class="table table-sm">
+							<thead>
+								<tr>
+									<th>Source Name</th>
+									<th>Sector</th>
+									<th class="text-right">Emissions</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each countrySources as source}
+									<tr class="hover">
+										<td>
+											<a href="/source/{source.id}" class="link link-hover">{source.name}</a>
+										</td>
+										<td class="text-sm opacity-70">{formatSector(source.sector)}</td>
+										<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		{/if}
 	</div>
 {/if}
