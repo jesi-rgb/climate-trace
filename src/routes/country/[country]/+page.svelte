@@ -17,11 +17,19 @@
 		ChartLine,
 		MapPin
 	} from 'phosphor-svelte';
+	import { Plot, LineY, Dot, Pointer, Text } from 'svelteplot';
 
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
 	let rankings = $derived(await getAllRankings());
-	let countryEmissions = $derived(await getAggregatedEmissions({ gadmId: country }));
+	let countryEmissions = $derived(
+		await Promise.all([
+			getAggregatedEmissions({ gadmId: country, year: 2021 }),
+			getAggregatedEmissions({ gadmId: country, year: 2022 }),
+			getAggregatedEmissions({ gadmId: country, year: 2023 }),
+			getAggregatedEmissions({ gadmId: country, year: 2024 })
+		])
+	);
 	let cities = $derived(await searchCities({ country, limit: 5 }));
 	let topSources = $derived(await getTopSources({ limit: 10 }));
 
@@ -40,18 +48,22 @@
 	});
 
 	let topSectors = $derived.by(() => {
-		if (!countryEmissions?.sectors?.summaries) return [];
-		return countryEmissions.sectors.summaries
+		if (!countryEmissions?.[0]?.sectors?.summaries) return [];
+		return countryEmissions[0].sectors.summaries
 			.sort((a, b) => b.emissionsQuantity - a.emissionsQuantity)
 			.slice(0, 5);
 	});
 
 	let emissionsTimeseries = $derived.by(() => {
-		if (!countryEmissions?.totals?.timeseries) return [];
 		const yearlyData = new Map<number, number>();
-		countryEmissions.totals.timeseries.forEach((t) => {
-			const current = yearlyData.get(t.year) || 0;
-			yearlyData.set(t.year, current + t.emissionsQuantity);
+		countryEmissions.forEach((yearData, index) => {
+			const year = 2021 + index;
+			if (yearData?.totals?.timeseries) {
+				yearData.totals.timeseries.forEach((t) => {
+					const current = yearlyData.get(year) || 0;
+					yearlyData.set(year, current + t.emissionsQuantity);
+				});
+			}
 		});
 		return Array.from(yearlyData.entries())
 			.sort((a, b) => a[0] - b[0])
@@ -82,9 +94,9 @@
 		</div>
 	</div>
 {:else}
-	<div class="container mx-auto max-w-7xl px-4 py-8">
-		<div class="mb-8">
-			<div class="breadcrumbs text-sm mb-4">
+	<div class="container">
+		<div class="mb-4">
+			<div class="breadcrumbs text-sm mb-2">
 				<ul>
 					<li><a href="/" class="link link-hover">Home</a></li>
 					<li>Countries</li>
@@ -99,7 +111,7 @@
 			<p class="text-lg opacity-70 mt-2">{data.region}</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 join-horizontal mb-4">
 			<div class="card bg-gradient-to-br from-error/10 to-error/5 border border-error/20">
 				<div class="card-body">
 					<div class="flex items-center gap-2 mb-2">
@@ -136,11 +148,11 @@
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 			{#if rankingsContext.length > 0}
-				<div class="card bg-base-200 border border-base-300">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-4">
-							<Trophy size={24} weight="fill" class="text-primary" />
-							<h2 class="card-title">Global Rankings</h2>
+				<div class="card bg-base-200 rounded-sm border border-base-300">
+					<div class="card-body py-2 px-0">
+						<div class="flex items-center gap-2 ml-3">
+							<Trophy size={14} weight="fill" class="text-primary" />
+							<h2 class="card-title text-lg">Global Rankings</h2>
 						</div>
 
 						<div class="overflow-x-auto">
@@ -176,7 +188,7 @@
 							</table>
 						</div>
 
-						<div class="text-xs opacity-60 mt-2">
+						<div class="text-xs opacity-60 mt-2 ml-3">
 							Showing ±3 countries around {data.name}'s position
 						</div>
 					</div>
@@ -227,16 +239,58 @@
 							<h2 class="card-title">Emissions Timeline</h2>
 						</div>
 
-						<div class="space-y-2">
-							{#each emissionsTimeseries.slice(-5) as { year, emissions }}
-								<div class="flex justify-between items-center">
-									<span class="text-sm font-medium">{year}</span>
-									<span class="text-sm tabular-nums">{fN(emissions)} tonnes CO₂e</span>
-								</div>
-							{/each}
-						</div>
+						<Plot
+							inset={15}
+							height={250}
+							y={{
+								grid: true,
+								nice: true,
+								tickFormat(d) {
+									return fN(d.valueOf() as number);
+								}
+							}}
+							x={{
+								grid: true,
+								nice: true,
+								ticks: [2021, 2022, 2023, 2024, 2025],
+								tickFormat(d) {
+									return d.valueOf() as number;
+								}
+							}}
+						>
+							<LineY
+								data={emissionsTimeseries}
+								x="year"
+								y="emissions"
+								curve="monotone-x"
+								stroke="var(--color-primary)"
+								strokeDasharray="2"
+								strokeWidth={2}
+							/>
 
-						<div class="text-xs opacity-60 mt-2">Last 5 years of data available</div>
+							<Dot data={emissionsTimeseries} x="year" y="emissions" fill="var(--color-primary)" />
+
+							<Pointer data={emissionsTimeseries} x="year">
+								{#snippet children({ data })}
+									<Text
+										{data}
+										fill="currentColor"
+										stroke="var(--color-base-200)"
+										strokeWidth={4}
+										x="year"
+										class="font-mono"
+										y="emissions"
+										text={(d) => `${fN(d.emissions, 2, 'standard')} t`}
+										fontSize={14}
+										lineAnchor="bottom"
+										fontWeight="bold"
+										dy={-10}
+									/>
+								{/snippet}
+							</Pointer>
+						</Plot>
+
+						<div class="text-xs opacity-60 mt-2">Emissions in tonnes CO₂e</div>
 					</div>
 				</div>
 			{/if}

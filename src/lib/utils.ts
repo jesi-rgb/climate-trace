@@ -5,9 +5,9 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export const fN = (value: number, decimals = 2) => {
+export const fN = (value: number, decimals = 2, notation?: Intl.NumberFormatOptions['notation']) => {
 	return value.toLocaleString('en-UK', {
-		notation: 'compact',
+		notation: notation ?? 'compact',
 		minimumFractionDigits: decimals,
 		maximumFractionDigits: decimals
 	});

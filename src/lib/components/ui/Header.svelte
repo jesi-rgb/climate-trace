@@ -5,9 +5,10 @@
 
 <nav class="flex py-1 items-center justify-between">
 	<div class="flex items-center gap-4">
-		<a class="" href="/">climate trace</a>
-		<a class="" href="/sectors">sectors</a>
-		<a class="" href="/rankings">sources</a>
+		<a class="" href="/">Climate Trace</a>
+		<a class="" href="/sectors">Sectors</a>
+		<a class="" href="/rankings">Rankings</a>
+		<a class="" href="/sources">Sources</a>
 	</div>
 
 	<CountrySearch />
