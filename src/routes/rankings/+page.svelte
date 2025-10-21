@@ -3,85 +3,50 @@
 	import { page } from '$app/state';
 	import { fN } from '$lib/utils';
 	import { getAllRankings } from '../api/rankings.remote';
+	import { Pagination } from '$lib/components/ui';
+	import { Plot, LineY } from 'svelteplot';
+	import { ct } from '$lib/api';
 
 	const ITEMS_PER_PAGE = 20;
 
-	const data = await getAllRankings();
-	console.log(data);
+	const data = await ct('getCountryRankings', { start: '2015-01', end: '2024-12' });
 
-	const currentPage = $derived(parseInt(page.url.searchParams.get('page') || '1'));
-	const totalPages = $derived(Math.ceil((data?.rankings.length || 0) / ITEMS_PER_PAGE));
+	let currentPage = $state(parseInt(page.url.searchParams.get('page') || '1'));
 	const startIndex = $derived((currentPage - 1) * ITEMS_PER_PAGE);
 	const endIndex = $derived(startIndex + ITEMS_PER_PAGE);
 	const currentRankings = $derived(data?.rankings.slice(startIndex, endIndex) || []);
 
-	function goToPage(page: number) {
-		goto(`?page=${page}`, { keepFocus: true, noScroll: false });
+	function handlePageChange(newPage: number) {
+		currentPage = newPage;
+		goto(`?page=${newPage}`, { keepFocus: true, noScroll: false });
 	}
 
-	function getDropdownPages() {
-		const pages = [];
-		const start = currentPage + 1;
-		const end = Math.min(currentPage + 4, totalPages);
-		for (let i = start; i <= end; i++) {
-			pages.push(i);
-		}
-		return pages;
+	function getTimeseriesData() {
+		if (!data?.totals?.timeseries) return [];
+		const grouped = new Map<number, number>();
+		data.totals.timeseries.forEach((t) => {
+			const current = grouped.get(t.year) || 0;
+			grouped.set(t.year, current + t.emissionsQuantity);
+		});
+		return Array.from(grouped.entries())
+			.sort((a, b) => a[0] - b[0])
+			.map(([year, emissions]) => ({ year, emissions }));
 	}
+
+	const timeseriesData = $derived(getTimeseriesData());
 </script>
 
-<div class="container mx-auto p-4">
+<div class="">
 	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-3xl font-bold">Global Emissions Rankings</h1>
-		{#if data}
-			<div class="join">
-				<button
-					class="join-item btn"
-					disabled={currentPage === 1}
-					onclick={() => goToPage(1)}
-					title="First page"
-				>
-					««
-				</button>
-				<button
-					class="join-item btn"
-					disabled={currentPage === 1}
-					onclick={() => goToPage(currentPage - 1)}
-				>
-					«
-				</button>
-
-				<div class="dropdown dropdown-center">
-					<button tabindex="0" role="button" class="join-item btn">Page {currentPage}</button>
-					{#if getDropdownPages().length > 0}
-						<ul
-							tabindex="0"
-							class="menu dropdown-content border-subtle z-[1] w-52 rounded-box bg-base-100 p-2 shadow"
-						>
-							{#each getDropdownPages() as page}
-								<li><button onclick={() => goToPage(page)}>Page {page}</button></li>
-							{/each}
-						</ul>
-					{/if}
-				</div>
-
-				<button
-					class="join-item btn"
-					disabled={currentPage === totalPages}
-					onclick={() => goToPage(currentPage + 1)}
-				>
-					»
-				</button>
-				<button
-					class="join-item btn"
-					disabled={currentPage === totalPages}
-					onclick={() => goToPage(totalPages)}
-					title="Last page"
-				>
-					»»
-				</button>
-			</div>
-		{/if}
+		<h1 class="text-3xl font-bold mb-4">Global Emissions Rankings</h1>
+		<div class="mt-6">
+			<Pagination
+				count={data.rankings.length}
+				perPage={ITEMS_PER_PAGE}
+				bind:page={currentPage}
+				onPageChange={handlePageChange}
+			/>
+		</div>
 	</div>
 
 	{#if !data}
@@ -98,20 +63,47 @@
 					<tr>
 						<th>Rank</th>
 						<th>Country</th>
-						<th>Emissions (tonnes CO₂e)</th>
+						<th class="text-right">Emissions (tonnes CO₂e)</th>
+						<th class="w-48">Trend (2021-2024)</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each currentRankings as ranking, i}
+						{@const countryData = timeseriesData.map((t) => ({
+							year: t.year,
+							emissions: (t.emissions * ranking.percentage) / 100
+						}))}
 						<tr
 							class="hover:bg-base-200 cursor-pointer"
 							onclick={() => goto(`/country/${ranking.country}`)}
 						>
 							<td>{startIndex + i + 1}</td>
 							<td>
-								{ranking.country}
+								{ranking.name}
 							</td>
 							<td class="tabular-nums text-right">{fN(ranking.emissionsQuantity)}</td>
+							<td>
+								{#if countryData.length > 0}
+									<Plot
+										height={40}
+										marginTop={5}
+										marginBottom={5}
+										marginLeft={0}
+										marginRight={0}
+										y={{ axis: null }}
+										x={{ axis: null }}
+									>
+										<LineY
+											data={countryData}
+											x="year"
+											y="emissions"
+											curve="monotone-x"
+											stroke="var(--color-primary)"
+											strokeWidth={1.5}
+										/>
+									</Plot>
+								{/if}
+							</td>
 						</tr>
 					{/each}
 				</tbody>

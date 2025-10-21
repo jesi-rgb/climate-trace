@@ -21,7 +21,9 @@ export const getTopSources = query(
 			year: v.optional(v.number()),
 			gas: v.optional(v.string()),
 			sectors: v.optional(v.array(v.string())),
-			limit: v.optional(v.number())
+			subsectors: v.optional(v.array(v.string())),
+			limit: v.optional(v.number()),
+			offset: v.optional(v.number())
 		})
 	),
 	async (filters = {}) => {

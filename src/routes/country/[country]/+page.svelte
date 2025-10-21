@@ -94,7 +94,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="container">
+	<div class="">
 		<div class="mb-4">
 			<div class="breadcrumbs text-sm mb-2">
 				<ul>

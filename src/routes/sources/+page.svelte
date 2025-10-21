@@ -2,49 +2,72 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { getTopSources } from '../api/source.remote';
-	import type { SourceSummary } from '$lib/api/schemas/generated';
 	import { fN, formatSector } from '$lib/utils';
+	import { Pagination } from '$lib/components/ui';
+	import { Factory, Tree, Car, Lightning, Buildings } from 'phosphor-svelte';
 
 	const ITEMS_PER_PAGE = 20;
+	const FETCH_CHUNK_SIZE = 500;
 
-	let sources = $state<SourceSummary[]>([]);
-	let filteredSources = $state<SourceSummary[]>([]);
+	const sectorIcons: Record<string, any> = {
+		'fossil-fuel-operations': Factory,
+		'forestry-and-land-use': Tree,
+		manufacturing: Factory,
+		transportation: Car,
+		power: Lightning,
+		buildings: Buildings
+	};
+
+	const MAX_DISPLAYABLE_ITEMS = 10000;
+
 	let searchTerm = $state('');
 	let selectedSubsectors = $state<string[]>([]);
-	let loading = $state(true);
-	let sectorHierarchy = $state<Record<string, string[]>>({});
+	let currentPage = $state(parseInt(page.url.searchParams.get('page') || '1'));
 
-	const currentPage = $derived(parseInt(page.url.searchParams.get('page') || '1'));
-	const totalPages = $derived(Math.ceil(filteredSources.length / ITEMS_PER_PAGE));
-	const startIndex = $derived((currentPage - 1) * ITEMS_PER_PAGE);
-	const endIndex = $derived(startIndex + ITEMS_PER_PAGE);
-	const paginatedSources = $derived(filteredSources.slice(startIndex, endIndex));
+	let hierarchyData = $derived(await getTopSources({ limit: 1000 }));
 
-	async function loadSources() {
-		loading = true;
-		try {
-			const data = await getTopSources({ limit: 1000 });
-			sources = data || [];
-			filteredSources = sources;
-
-			const hierarchy: Record<string, Set<string>> = {};
-			for (const source of sources) {
-				if (!hierarchy[source.sector]) {
-					hierarchy[source.sector] = new Set();
-				}
-				hierarchy[source.sector].add(source.subsector);
+	let sectorHierarchy = $derived.by(() => {
+		if (!hierarchyData) return {};
+		const hierarchy: Record<string, Set<string>> = {};
+		for (const source of hierarchyData) {
+			if (!hierarchy[source.sector]) {
+				hierarchy[source.sector] = new Set();
 			}
-
-			sectorHierarchy = Object.fromEntries(
-				Object.entries(hierarchy).map(([sector, subsectors]) => [
-					sector,
-					Array.from(subsectors).sort()
-				])
-			);
-		} finally {
-			loading = false;
+			hierarchy[source.sector].add(source.subsector);
 		}
-	}
+		return Object.fromEntries(
+			Object.entries(hierarchy).map(([sector, subsectors]) => [
+				sector,
+				Array.from(subsectors).sort()
+			])
+		);
+	});
+
+	let chunkOffset = $derived(
+		Math.floor(((currentPage - 1) * ITEMS_PER_PAGE) / FETCH_CHUNK_SIZE) * FETCH_CHUNK_SIZE
+	);
+
+	let chunkData = $derived(
+		await getTopSources({
+			limit: FETCH_CHUNK_SIZE,
+			offset: chunkOffset,
+			subsectors: selectedSubsectors.length > 0 ? selectedSubsectors : undefined
+		})
+	);
+
+	let paginatedSources = $derived.by(() => {
+		if (!chunkData) return [];
+		const indexInChunk = ((currentPage - 1) * ITEMS_PER_PAGE) % FETCH_CHUNK_SIZE;
+		let sources = chunkData.slice(indexInChunk, indexInChunk + ITEMS_PER_PAGE);
+
+		if (searchTerm) {
+			sources = sources.filter((s) => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+		}
+
+		return sources;
+	});
+
+	let totalCount = $derived(MAX_DISPLAYABLE_ITEMS);
 
 	function toggleSubsector(subsector: string) {
 		if (selectedSubsectors.includes(subsector)) {
@@ -52,158 +75,85 @@
 		} else {
 			selectedSubsectors = [...selectedSubsectors, subsector];
 		}
+		handlePageChange(1);
 	}
 
-	function goToPage(page: number) {
-		goto(`?page=${page}`, { keepFocus: true, noScroll: false });
+	function handlePageChange(newPage: number) {
+		currentPage = newPage;
+		goto(`?page=${newPage}`, { keepFocus: true, noScroll: false });
 	}
 
-	function getDropdownPages() {
-		const pages = [];
-		const start = currentPage + 1;
-		const end = Math.min(currentPage + 4, totalPages);
-		for (let i = start; i <= end; i++) {
-			pages.push(i);
-		}
-		return pages;
-	}
-
-	$effect(() => {
-		let result = sources;
-
-		if (searchTerm) {
-			result = result.filter((s) => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
-		}
-
-		if (selectedSubsectors.length > 0) {
-			result = result.filter((s) => selectedSubsectors.includes(s.subsector));
-		}
-
-		filteredSources = result;
-		if (currentPage > Math.ceil(result.length / ITEMS_PER_PAGE)) {
-			goToPage(1);
-		}
-	});
-
-	loadSources();
+	let loading = $derived($effect.pending());
 </script>
 
 <div class="drawer drawer-open">
 	<input id="sources-drawer" type="checkbox" class="drawer-toggle" />
 	<div class="drawer-content">
 		<div class="container mx-auto p-4">
-			<div class="mb-6 flex items-center justify-between">
+			<div class="mb-6">
 				<h1 class="text-3xl font-bold">Sources</h1>
-				{#if !loading}
-					<div class="join">
-						<button
-							class="join-item btn"
-							disabled={currentPage === 1}
-							onclick={() => goToPage(1)}
-							title="First page"
-						>
-							««
-						</button>
-						<button
-							class="join-item btn"
-							disabled={currentPage === 1}
-							onclick={() => goToPage(currentPage - 1)}
-						>
-							«
-						</button>
-
-						<div class="dropdown dropdown-center">
-							<button tabindex="0" role="button" class="join-item btn">Page {currentPage}</button>
-							{#if getDropdownPages().length > 0}
-								<ul
-									tabindex="0"
-									class="menu dropdown-content border-subtle z-[1] w-52 rounded-box bg-base-100 p-2 shadow"
-								>
-									{#each getDropdownPages() as pageNum}
-										<li><button onclick={() => goToPage(pageNum)}>Page {pageNum}</button></li>
-									{/each}
-								</ul>
-							{/if}
-						</div>
-
-						<button
-							class="join-item btn"
-							disabled={currentPage === totalPages}
-							onclick={() => goToPage(currentPage + 1)}
-						>
-							»
-						</button>
-						<button
-							class="join-item btn"
-							disabled={currentPage === totalPages}
-							onclick={() => goToPage(totalPages)}
-							title="Last page"
-						>
-							»»
-						</button>
-					</div>
-				{/if}
+				<p class="text-sm opacity-60 mt-2">
+					Showing top {totalCount.toLocaleString()} emission sources. Use filters to narrow results.
+				</p>
 			</div>
 
-			{#if loading}
-				<div class="flex my-20 items-center justify-center">
-					<div class="text-center">
-						<div class="loading loading-spinner loading-lg text-primary"></div>
-						<p class="mt-4 text-xs text-muted">Loading sources...</p>
-					</div>
-				</div>
-			{:else}
-				<div class="overflow-x-auto">
-					<table class="table">
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Sector</th>
-								<th>Subsector</th>
-								<th>Country</th>
-								<th>Asset Type</th>
-								<th>Source Type</th>
-								<th>Emissions (tonnes CO₂e)</th>
-								<th>Year</th>
+			<div class="mt-6 flex items-baseline justify-end">
+				{#if loading}
+					<div class="loading loading-bars"></div>
+				{/if}
+				<Pagination
+					count={totalCount}
+					perPage={ITEMS_PER_PAGE}
+					bind:page={currentPage}
+					onPageChange={handlePageChange}
+				/>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Sector</th>
+							<th>Subsector</th>
+							<th>Country</th>
+							<th>Asset Type</th>
+							<th>Source Type</th>
+							<th>Emissions (tonnes CO₂e)</th>
+							<th>Year</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each paginatedSources as source}
+							<tr class="hover">
+								<td>
+									<a href="/source/{source.id}" class="link link-hover">
+										{source.name}
+									</a>
+								</td>
+								<td>
+									<a href="/sector/{source.sector}" class="link link-hover">
+										{formatSector(source.sector)}
+									</a>
+								</td>
+								<td>{formatSector(source.subsector)}</td>
+								<td>
+									<a href="/country/{source.country}" class="link link-hover">
+										{source.country}
+									</a>
+								</td>
+								<td>{source.assetType}</td>
+								<td>{formatSector(source.sourceType)}</td>
+								<td class="tabular-nums text-right">{fN(source.emissionsQuantity)}</td>
+								<td>{source.year}</td>
 							</tr>
-						</thead>
-						<tbody>
-							{#each paginatedSources as source}
-								<tr class="hover">
-									<td>
-										<a href="/source/{source.id}" class="link link-hover">
-											{source.name}
-										</a>
-									</td>
-									<td>
-										<a href="/sector/{source.sector}" class="link link-hover">
-											{formatSector(source.sector)}
-										</a>
-									</td>
-									<td>{formatSector(source.subsector)}</td>
-									<td>
-										<a href="/country/{source.country}" class="link link-hover">
-											{source.country}
-										</a>
-									</td>
-									<td>{source.assetType}</td>
-									<td>{formatSector(source.sourceType)}</td>
-									<td class="tabular-nums text-right">{fN(source.emissionsQuantity)}</td>
-									<td>{source.year}</td>
-								</tr>
-							{:else}
-								<tr>
-									<td colspan="8" class="text-center text-muted">No sources found</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-
-				<div class="mt-4 text-sm text-muted">
-					Showing {filteredSources.length} of {sources.length} sources
-				</div>
-			{/if}
+						{:else}
+							<tr>
+								<td colspan="8" class="text-center text-muted">No sources found</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 	<div class="drawer-side">
@@ -222,6 +172,7 @@
 							class="input input-bordered input-sm w-full"
 						/>
 					</label>
+					<p class="text-xs opacity-60 mt-1">Searches within current page results</p>
 				</div>
 
 				<div>
@@ -239,9 +190,11 @@
 					</div>
 					<ul class="menu menu-sm bg-base-100 rounded-box w-full">
 						{#each Object.entries(sectorHierarchy) as [sector, subsectors]}
+							{@const SectorIcon = sectorIcons[sector] || Factory}
 							<li>
 								<details open>
 									<summary class="font-medium">
+										<SectorIcon size={16} class="inline mr-1" />
 										{formatSector(sector)}
 									</summary>
 									<ul>

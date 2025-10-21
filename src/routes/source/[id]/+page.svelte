@@ -4,9 +4,14 @@
 	import { getSourceById } from '../../api/source.remote';
 	import { Factory, Globe, MapPin, ChartLine, XCircle, Flame } from 'phosphor-svelte';
 	import { Plot, LineY, Dot } from 'svelteplot';
+	import { Pagination } from '$lib/components/ui';
+
+	const ITEMS_PER_PAGE = 20;
 
 	let sourceId = $derived(Number(page.params.id));
 	let source = $derived(await getSourceById({ id: sourceId }));
+
+	let currentPage = $state(1);
 
 	let emissionsTimeseries = $derived.by(() => {
 		if (!source?.emissions) return [];
@@ -41,6 +46,10 @@
 			}))
 			.sort((a, b) => b.quantity - a.quantity);
 	});
+
+	const startIndex = $derived((currentPage - 1) * ITEMS_PER_PAGE);
+	const endIndex = $derived(startIndex + ITEMS_PER_PAGE);
+	const currentEmissions = $derived(source?.emissions.slice(startIndex, endIndex) || []);
 </script>
 
 {#if $effect.pending()}
@@ -215,7 +224,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each source.emissions as emission}
+							{#each currentEmissions as emission}
 								<tr class="hover">
 									<td>{emission.date}</td>
 									<td class="text-right tabular-nums">{fN(emission.emissionsQuantity)}</td>
@@ -226,8 +235,12 @@
 					</table>
 				</div>
 
-				<div class="text-xs opacity-60 mt-2 ml-3">
-					Showing {source.emissions.length} emission records
+				<div class="mt-4 mb-2">
+					<Pagination
+						count={source.emissions.length}
+						perPage={ITEMS_PER_PAGE}
+						bind:page={currentPage}
+					/>
 				</div>
 			</div>
 		</div>

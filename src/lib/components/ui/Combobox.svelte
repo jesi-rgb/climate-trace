@@ -12,7 +12,7 @@
 		contentProps?: WithoutChildrenOrChild<Combobox.ContentProps>;
 		placeholder?: string;
 		emptyMessage?: string;
-		Icon?: SvelteComponent;
+		Icon: SvelteComponent;
 		showScrollButtons?: boolean;
 		transitionConfig?: { y?: number; duration?: number; ease?: any };
 	};
@@ -71,21 +71,20 @@
 </script>
 
 <Combobox.Root {type} {items} bind:value={value as never} bind:open {...mergedRootProps}>
-	<div class="relative">
-		{#if Icon}
-			<Icon class="absolute left-3 top-1/2 -translate-y-1/2 z-10" />
-		{/if}
+	<label class="label w-full input">
+		<Icon size={20} />
 
 		<Combobox.Input
 			{...mergedInputProps}
-			class="input input-bordered w-full {Icon ? 'pl-10' : ''} pr-10 focus:input-primary"
+			class="focus:input-primary text-base-content"
 			{placeholder}
 			aria-label={placeholder}
 		/>
-		<Combobox.Trigger class="absolute end-3 top-1/2 size-5 -translate-y-1/2">
-			<CaretUpDown class="text-muted size-5 z-10" />
+
+		<Combobox.Trigger class="">
+			<CaretUpDown weight="duotone" class="z-10" />
 		</Combobox.Trigger>
-	</div>
+	</label>
 	<Combobox.Portal>
 		<Combobox.Content forceMount sideOffset={8} align="start" {...contentProps}>
 			{#snippet child({ wrapperProps, props, open: isOpen })}

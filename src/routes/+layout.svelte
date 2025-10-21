@@ -12,7 +12,7 @@
 
 <main
 	class="selection:bg-primary selection:text-primary-content w-[90%]
-	md:max-w-7xl my-10 mx-auto"
+	md:w-full px-2 py-0.5 mx-auto"
 >
 	<Header />
 	{@render children?.()}
