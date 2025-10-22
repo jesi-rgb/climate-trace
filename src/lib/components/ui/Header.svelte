@@ -3,12 +3,16 @@
 	import CountrySearch from './CountrySearch.svelte';
 </script>
 
-<nav class="flex py-1 items-center justify-between gap-10">
-	<div class="flex items-center gap-4 shrink-0">
-		<a class="" href="/">Climate Trace</a>
-		<a class="" href="/sectors">Sectors</a>
-		<a class="" href="/rankings">Rankings</a>
-		<a class="" href="/sources">Sources</a>
+<nav
+	class="flex py-section-y px-section-x items-center justify-between gap-10 border-b
+	border-subtle/40
+	shadow-sm"
+>
+	<div class="flex items-center gap-2 shrink-0">
+		<a class="btn btn-sm" href="/">Climate Trace</a>
+		<a class="btn btn-sm" href="/sectors">Sectors</a>
+		<a class="btn btn-sm" href="/rankings">Rankings</a>
+		<a class="btn btn-sm" href="/sources">Sources</a>
 	</div>
 
 	<CountrySearch />

@@ -38,7 +38,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="container">
+	<div class="px-section-x py-section-y">
 		<div class="mb-4">
 			<div class="breadcrumbs text-sm mb-2">
 				<ul>

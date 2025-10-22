@@ -28,7 +28,7 @@
 </script>
 
 <label
-	class="swap swap-rotate btn btn-xs border-subtle text-base-content/20 hover:text-primary text-lg"
+	class="swap swap-rotate btn btn-sm border-subtle text-base-content/20 hover:text-primary text-lg"
 >
 	<input type="checkbox" value="reallol" class="" onclick={toggleTheme} />
 

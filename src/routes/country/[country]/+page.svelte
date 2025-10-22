@@ -94,7 +94,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="">
+	<div class="py-section-y px-section-x">
 		<div class="mb-4">
 			<div class="breadcrumbs text-sm mb-2">
 				<ul>
@@ -280,8 +280,8 @@
 										x="year"
 										class="font-mono"
 										y="emissions"
-										text={(d) => `${fN(d.emissions, 2, 'standard')} t`}
-										fontSize={14}
+										text={(d) => `${fN(d.emissions, 4, 'compact')} t`}
+										fontSize={12}
 										lineAnchor="bottom"
 										fontWeight="bold"
 										dy={-10}

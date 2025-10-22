@@ -25,8 +25,8 @@
 	--color-warning-content: oklch(98% 0.016 73.684);
 	--color-error: oklch(44% 0.177 26.899);
 	--color-error-content: oklch(97% 0.013 17.38);
-	--radius-selector: 0;
-	--radius-field: 0;
+	--radius-selector: 1rem;
+	--radius-field: 1rem;
 	--radius-box: 1rem;
 	--size-selector: 0.25rem;
 	--size-field: 0.25rem;
@@ -81,6 +81,8 @@
 	--font-mono: 'AT Name Mono Medium', 'SF Mono', 'Consolas', 'monospace';
 	--color-muted: color-mix(in oklch, var(--color-base-content), var(--color-base-100) 35%);
 	--color-subtle: color-mix(in oklch, var(--color-base-content), var(--color-base-100) 75%);
+	--spacing-section-x: 1rem;
+	--spacing-section-y: 0.7rem;
 }
 
 @custom-variant dark (&:where([data-theme=barelycookie], [data-theme=barelycookie] *));

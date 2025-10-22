@@ -75,7 +75,7 @@
 	loadDashboard();
 </script>
 
-<main class="mx-auto">
+<main class="px-section-x py-section-y">
 	{#if loading}
 		<div class="flex min-h-[60vh] items-center justify-center">
 			<div class="text-center">

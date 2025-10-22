@@ -4,16 +4,24 @@
 	import { getTopSources } from '../api/source.remote';
 	import { fN, formatSector } from '$lib/utils';
 	import { Pagination } from '$lib/components/ui';
-	import { Factory, Tree, Car, Lightning, Buildings } from 'phosphor-svelte';
+	import {
+		Factory,
+		Tree,
+		Lightning,
+		Buildings,
+		CraneTower,
+		GasCan,
+		AirplaneTakeoff
+	} from 'phosphor-svelte';
 
 	const ITEMS_PER_PAGE = 20;
 	const FETCH_CHUNK_SIZE = 500;
 
 	const sectorIcons: Record<string, any> = {
-		'fossil-fuel-operations': Factory,
+		'fossil-fuel-operations': GasCan,
 		'forestry-and-land-use': Tree,
-		manufacturing: Factory,
-		transportation: Car,
+		manufacturing: CraneTower,
+		transportation: AirplaneTakeoff,
 		power: Lightning,
 		buildings: Buildings
 	};
@@ -21,6 +29,7 @@
 	const MAX_DISPLAYABLE_ITEMS = 10000;
 
 	let searchTerm = $state('');
+	let searchCountry = $state('');
 	let selectedSubsectors = $state<string[]>([]);
 	let currentPage = $state(parseInt(page.url.searchParams.get('page') || '1'));
 
@@ -156,9 +165,9 @@
 			</div>
 		</div>
 	</div>
-	<div class="drawer-side">
+	<div class="drawer-side shadow-lg">
 		<label for="sources-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-		<div class="bg-base-200 min-h-full w-80 p-4">
+		<div class="border-r border-subtle/40 min-h-full w-80 p-4">
 			<h2 class="text-lg font-semibold mb-4">Filters</h2>
 
 			<div class="space-y-6">
@@ -194,7 +203,7 @@
 							<li>
 								<details open>
 									<summary class="font-medium">
-										<SectorIcon size={16} class="inline mr-1" />
+										<SectorIcon size={18} weight="fill" class="inline mr-1" />
 										{formatSector(sector)}
 									</summary>
 									<ul>
