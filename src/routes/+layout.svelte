@@ -11,10 +11,10 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<main
-	class="selection:bg-primary selection:text-primary-content w-full mx-auto flex-grow min-h-screen"
->
+<div class="h-screen flex flex-col">
 	<Header />
-	{@render children?.()}
-</main>
-<Footer />
+	<main class="flex-1 overflow-hidden selection:bg-primary selection:text-primary-content">
+		{@render children?.()}
+	</main>
+	<Footer />
+</div>
