@@ -48,9 +48,9 @@
 					<tr>
 						<th>Rank</th>
 						<th>Country</th>
+						<th class="">Trend (2015-2024)</th>
 						<th class="text-right">Emissions (tonnes CO₂e)</th>
 						<th class="text-right">Per Capita</th>
-						<th class="w-48">Trend (2015-2024)</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -63,11 +63,11 @@
 							<td>
 								{ranking.name}
 							</td>
-							<td class="tabular-nums text-right">{fN(ranking.emissionsQuantity)}</td>
-							<td class="tabular-nums text-right">{fN(ranking.emissionsPerCapita)}</td>
-							<td class="max-w-[100px]">
+							<td class="max-w-[0px]">
 								<TrendingLineRanking country={ranking.country} />
 							</td>
+							<td class="tabular-nums text-right">{fN(ranking.emissionsQuantity)}</td>
+							<td class="tabular-nums text-right">{fN(ranking.emissionsPerCapita)}</td>
 						</tr>
 					{/each}
 				</tbody>

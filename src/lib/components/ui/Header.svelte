@@ -16,6 +16,4 @@
 	</div>
 
 	<CountrySearch />
-
-	<ThemeToggle />
 </nav>

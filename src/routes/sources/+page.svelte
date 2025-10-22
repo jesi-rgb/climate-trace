@@ -165,7 +165,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="drawer-side shadow-lg">
+	<div class="drawer-side">
 		<label for="sources-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
 		<div class="border-r border-subtle/40 min-h-full w-80 p-4">
 			<h2 class="text-lg font-semibold mb-4">Filters</h2>

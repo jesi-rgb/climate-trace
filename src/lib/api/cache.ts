@@ -21,9 +21,9 @@ type CacheStats = {
 };
 
 const CACHE_CONFIG: Record<CacheCategory, number> = {
-	definitions: 60 * 60 * 1000,
-	reference: 30 * 60 * 1000,
-	dynamic: 5 * 60 * 1000,
+	definitions: 24 * 60 * 60 * 1000,
+	reference: 12 * 60 * 60 * 1000,
+	dynamic: 60 * 60 * 1000,
 	none: 0
 };
 

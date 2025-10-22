@@ -22,14 +22,19 @@
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
 	let rankings = $derived(await getAllRankings());
-	let countryEmissions = $derived(
-		await Promise.all([
-			getAggregatedEmissions({ gadmId: country, year: 2021 }),
-			getAggregatedEmissions({ gadmId: country, year: 2022 }),
-			getAggregatedEmissions({ gadmId: country, year: 2023 }),
-			getAggregatedEmissions({ gadmId: country, year: 2024 })
-		])
+
+	const years = [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
+	let yearlyRankings = $derived(
+		await Promise.all(
+			years.map((year) =>
+				import('$lib/api').then((mod) =>
+					mod.ct('getCountryRankings', { start: String(year), end: String(year) })
+				)
+			)
+		)
 	);
+
+	let countryEmissions = $derived(await getAggregatedEmissions({ gadmId: country, year: 2024 }));
 	let cities = $derived(await searchCities({ country, limit: 5 }));
 	let topSources = $derived(await getTopSources({ limit: 10 }));
 
@@ -47,27 +52,21 @@
 		}));
 	});
 
-	let topSectors = $derived.by(() => {
-		if (!countryEmissions?.[0]?.sectors?.summaries) return [];
-		return countryEmissions[0].sectors.summaries
-			.sort((a, b) => b.emissionsQuantity - a.emissionsQuantity)
-			.slice(0, 5);
+	let emissionsTimeseries = $derived.by(() => {
+		return years.map((year, index) => {
+			const ranking = yearlyRankings[index]?.rankings.find((r) => r.country === country);
+			return {
+				year,
+				emissions: ranking?.emissionsQuantity || 0
+			};
+		});
 	});
 
-	let emissionsTimeseries = $derived.by(() => {
-		const yearlyData = new Map<number, number>();
-		countryEmissions.forEach((yearData, index) => {
-			const year = 2021 + index;
-			if (yearData?.totals?.timeseries) {
-				yearData.totals.timeseries.forEach((t) => {
-					const current = yearlyData.get(year) || 0;
-					yearlyData.set(year, current + t.emissionsQuantity);
-				});
-			}
-		});
-		return Array.from(yearlyData.entries())
-			.sort((a, b) => a[0] - b[0])
-			.map(([year, emissions]) => ({ year, emissions }));
+	let topSectors = $derived.by(() => {
+		if (!countryEmissions?.sectors?.summaries) return [];
+		return countryEmissions.sectors.summaries
+			.sort((a, b) => b.emissionsQuantity - a.emissionsQuantity)
+			.slice(0, 5);
 	});
 
 	let countrySources = $derived.by(() => {
@@ -252,7 +251,7 @@
 							x={{
 								grid: true,
 								nice: true,
-								ticks: [2021, 2022, 2023, 2024, 2025],
+								ticks: years,
 								tickFormat(d) {
 									return d.valueOf() as number;
 								}

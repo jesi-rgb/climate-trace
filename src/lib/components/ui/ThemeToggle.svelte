@@ -27,13 +27,11 @@
 	});
 </script>
 
-<label
-	class="swap swap-rotate btn btn-sm border-subtle text-base-content/20 hover:text-primary text-lg"
->
+<label class="swap swap-rotate text-base-muted hover:text-primary text-lg">
 	<input type="checkbox" value="reallol" class="" onclick={toggleTheme} />
 
 	<!-- sun icon -->
-	<Sun class="swap-on swap-on-rotate" />
+	<Sun weight="fill" class="swap-on swap-on-rotate" />
 	<!-- moon icon -->
-	<Moon class="swap-off swap-off-rotate" />
+	<Moon weight="fill" class="swap-off swap-off-rotate" />
 </label>

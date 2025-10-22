@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { Plot, LineY, normalizeY, AxisX, AxisY } from 'svelteplot';
 	import { ct } from '$lib/api';
-	import { fN } from '$lib/utils';
-	import { draw } from 'svelte/transition';
-	import { cubicIn } from 'svelte/easing';
+	import CountrySearch from './ui/CountrySearch.svelte';
 
 	interface Props {
 		country: string;
@@ -27,15 +25,17 @@
 	);
 </script>
 
-<Plot height={50} marginLeft={15}>
-	<AxisX title={false} tickCount={2} tickFontSize={10} />
-	<AxisY title={false} tickCount={0} />
-	<LineY
-		{data}
-		x="year"
-		y="emissions"
-		curve="monotone-x"
-		stroke="var(--color-primary)"
-		strokeWidth={1.5}
-	/>
-</Plot>
+{#if data}
+	<Plot height={50} marginLeft={15}>
+		<AxisX title={false} tickCount={2} tickFontSize={10} />
+		<AxisY title={false} tickCount={0} />
+		<LineY
+			{data}
+			x="year"
+			y="emissions"
+			curve="monotone-x"
+			stroke="var(--color-primary)"
+			strokeWidth={1.5}
+		/>
+	</Plot>
+{/if}
