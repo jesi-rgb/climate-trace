@@ -2,7 +2,8 @@
 	import { page } from '$app/state';
 	import { fN, formatSector } from '$lib/utils';
 	import { getSectorDetails, getSectorEmissions, getSectorSources } from '../../api/sector.remote';
-	import { Lightning, Factory, XCircle, Stack, Buildings } from 'phosphor-svelte';
+	import { Lightning, Factory, XCircle, Stack } from 'phosphor-svelte';
+	import EmissionSources from '$lib/components/sector/EmissionSources.svelte';
 
 	let sector = $derived(page.params.sector!);
 	let details = $derived(await getSectorDetails(sector));
@@ -14,10 +15,10 @@
 
 	let topSubsectors = $derived.by(() => {
 		if (!emissions.subsectors.summaries) return [];
-		return emissions.subsectors.summaries
-			.sort((a, b) => b.emissionsQuantity - a.emissionsQuantity)
-			.slice(0, 5);
+		return emissions.subsectors.summaries.sort((a, b) => b.emissionsQuantity - a.emissionsQuantity);
 	});
+
+	let subsectorNames = $derived(details.subSectors);
 </script>
 
 {#if $effect.pending()}
@@ -112,63 +113,10 @@
 					</div>
 				</div>
 			{/if}
-
-			<div class="card bg-base-200 border border-base-300">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-4">
-						<Buildings size={24} weight="fill" class="text-accent" />
-						<h2 class="card-title">All Subsectors</h2>
-					</div>
-
-					<div class="flex flex-wrap gap-2">
-						{#each details.subSectors as subsector}
-							<div class="badge badge-lg">{formatSector(subsector)}</div>
-						{/each}
-					</div>
-				</div>
-			</div>
 		</div>
 
 		{#if sources.length > 0}
-			<div class="card bg-base-200 border border-base-300">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-4">
-						<Factory size={24} weight="bold" class="text-warning" />
-						<h2 class="card-title">Top Emission Sources</h2>
-					</div>
-
-					<div class="overflow-x-auto">
-						<table class="table table-sm">
-							<thead>
-								<tr>
-									<th>Source Name</th>
-									<th>Country</th>
-									<th>Subsector</th>
-									<th class="text-right">Emissions</th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each sources as source}
-									<tr class="hover">
-										<td>
-											<a href="/source/{source.id}" class="link link-hover">
-												{source.name || 'Unknown'}
-											</a>
-										</td>
-										<td>
-											<a href="/country/{source.country}" class="link link-hover">
-												{source.country}
-											</a>
-										</td>
-										<td class="text-sm opacity-70">{formatSector(source.subsector)}</td>
-										<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
+			<EmissionSources {sources} subsectors={subsectorNames} />
 		{/if}
 	</div>
 {/if}

@@ -1,40 +1,66 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { fN, formatSector } from '$lib/utils';
+	import { fN, formatDate, formatSector } from '$lib/utils';
 	import { getSourceById } from '../../api/source.remote';
-	import { Factory, Globe, MapPin, ChartLine, XCircle, Flame } from 'phosphor-svelte';
-	import { Plot, LineY, Dot } from 'svelteplot';
+	import {
+		Factory,
+		Globe,
+		MapPin,
+		ChartLine,
+		XCircle,
+		Flame,
+		Users,
+		Gauge,
+		Lightning
+	} from 'phosphor-svelte';
+	import { Plot, LineY, Dot, formatMonth } from 'svelteplot';
 	import { Pagination } from '$lib/components/ui';
 
-	const ITEMS_PER_PAGE = 20;
+	const ITEMS_PER_PAGE = 10;
 
 	let sourceId = $derived(Number(page.params.id));
-	let source = $derived(await getSourceById({ id: sourceId }));
+
+	const years = [2021, 2022, 2023, 2024];
+	let yearlyData = $derived(
+		await Promise.all(
+			years.map((year) =>
+				getSourceById({
+					id: sourceId,
+					timeGranularity: 'month',
+					start: `${year}-01`,
+					end: `${year}-12`
+				})
+			)
+		)
+	);
+
+	let source = $derived(yearlyData[yearlyData.length - 1]);
 
 	let currentPage = $state(1);
 
-	let emissionsTimeseries = $derived.by(() => {
-		if (!source?.emissions) return [];
-		const yearlyData = new Map<number, number>();
-		source.emissions.forEach((e) => {
-			const year = new Date(e.date).getFullYear();
-			const current = yearlyData.get(year) || 0;
-			yearlyData.set(year, current + e.emissionsQuantity);
+	let allEmissions = $derived.by(() => {
+		return yearlyData.flatMap((data) => {
+			if (!data?.emissions || !Array.isArray(data.emissions)) return [];
+			return data.emissions;
 		});
-		return Array.from(yearlyData.entries())
-			.sort((a, b) => a[0] - b[0])
-			.map(([year, emissions]) => ({ year, emissions }));
+	});
+
+	let emissionsTimeseries = $derived.by(() => {
+		return allEmissions.map((e) => ({
+			date: `${e.year}-${String(e.month || 1).padStart(2, '0')}`,
+			year: e.year,
+			month: e.month,
+			emissions: e.emissionsQuantity
+		}));
 	});
 
 	let totalEmissions = $derived.by(() => {
-		if (!source?.emissions) return 0;
-		return source.emissions.reduce((sum, e) => sum + e.emissionsQuantity, 0);
+		return allEmissions.reduce((sum, e) => sum + e.emissionsQuantity, 0);
 	});
 
 	let gasBreakdown = $derived.by(() => {
-		if (!source?.emissions) return [];
 		const gasMap = new Map<string, number>();
-		source.emissions.forEach((e) => {
+		allEmissions.forEach((e) => {
 			const current = gasMap.get(e.gas) || 0;
 			gasMap.set(e.gas, current + e.emissionsQuantity);
 		});
@@ -49,7 +75,7 @@
 
 	const startIndex = $derived((currentPage - 1) * ITEMS_PER_PAGE);
 	const endIndex = $derived(startIndex + ITEMS_PER_PAGE);
-	const currentEmissions = $derived(source?.emissions.slice(startIndex, endIndex) || []);
+	const currentEmissions = $derived(allEmissions.slice(startIndex, endIndex));
 </script>
 
 {#if $effect.pending()}
@@ -70,7 +96,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="container">
+	<div class="px-section-x py-section-y">
 		<div class="mb-4">
 			<div class="breadcrumbs text-sm mb-2">
 				<ul>
@@ -87,7 +113,7 @@
 			<p class="text-lg opacity-70 mt-2">{formatSector(source.sector)}</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 join-horizontal mb-4">
+		<div class="grid grid-cols-1 lg:grid-cols-4 gap-4 join-horizontal mb-4">
 			<div class="card bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20">
 				<div class="card-body">
 					<div class="flex items-center gap-2 mb-2">
@@ -130,9 +156,83 @@
 					<p class="text-sm opacity-60">industry type</p>
 				</div>
 			</div>
+
+			{#if source.totals?.capacity}
+				<div class="card bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20">
+					<div class="card-body">
+						<div class="flex items-center gap-2 mb-2">
+							<Gauge size={20} weight="fill" class="text-accent" />
+							<h2 class="card-title text-sm font-medium opacity-70">Capacity</h2>
+						</div>
+						<p class="text-4xl font-bold mb-1">{fN(source.totals.capacity)}</p>
+						<p class="text-sm opacity-60">{source.totals.capacityUnits || 'units'}</p>
+					</div>
+				</div>
+			{/if}
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+		{#if source.owners && source.owners.length > 0}
+			<div class="card bg-base-200 border border-base-300 mb-6">
+				<div class="card-body">
+					<div class="flex items-center gap-2 mb-4">
+						<Users size={24} weight="fill" class="text-info" />
+						<h2 class="card-title">Owners</h2>
+					</div>
+					<div class="flex flex-wrap gap-2">
+						{#each source.owners as owner}
+							<a href="/owners?id={owner.id}" class="badge badge-lg badge-outline">{owner.name}</a>
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+			{#if source.totals?.activity}
+				<div class="stat bg-base-200 border border-base-300 rounded-lg">
+					<div class="stat-figure text-primary">
+						<Lightning size={32} weight="fill" />
+					</div>
+					<div class="stat-title">Activity</div>
+					<div class="stat-value text-2xl">{fN(source.totals.activity)}</div>
+					<div class="stat-desc">{source.totals.activityUnits || 'units'}</div>
+				</div>
+			{/if}
+			{#if source.totals?.capacityFactor !== undefined}
+				<div class="stat bg-base-200 border border-base-300 rounded-lg">
+					<div class="stat-figure text-secondary">
+						<Gauge size={32} weight="fill" />
+					</div>
+					<div class="stat-title">Capacity Factor</div>
+					<div class="stat-value text-2xl">
+						{(source.totals.capacityFactor * 100).toFixed(1)}%
+					</div>
+					<div class="stat-desc">efficiency</div>
+				</div>
+			{/if}
+			{#if source.totals?.emissionsFactor}
+				<div class="stat bg-base-200 border border-base-300 rounded-lg">
+					<div class="stat-figure text-warning">
+						<Flame size={32} weight="fill" />
+					</div>
+					<div class="stat-title">Emissions Factor</div>
+					<div class="stat-value text-2xl">{fN(source.totals.emissionsFactor)}</div>
+					<div class="stat-desc">{source.totals.emissionsFactorUnits || 'units'}</div>
+				</div>
+			{/if}
+			{#if gasBreakdown.length === 1}
+				<div class="stat bg-base-200 border border-base-300 rounded-lg">
+					<div class="stat-figure text-error">
+						<Flame size={32} weight="fill" />
+					</div>
+					<div class="stat-title">Gas Type</div>
+					<div class="stat-value text-2xl">{gasBreakdown[0].gas}</div>
+					<div class="stat-desc">{fN(gasBreakdown[0].quantity)} tonnes</div>
+				</div>
+			{/if}
+		</div>
+
+		<div class="mb-8">
 			{#if emissionsTimeseries.length > 0}
 				<div class="card bg-base-200 border border-base-300">
 					<div class="card-body">
@@ -142,7 +242,7 @@
 						</div>
 
 						<Plot
-							inset={10}
+							inset={15}
 							height={250}
 							y={{
 								grid: true,
@@ -153,20 +253,30 @@
 							}}
 							x={{
 								grid: true,
-								nice: true
+								interval: '1 quarter',
+								tickFormat(d) {
+									return formatDate(d);
+								},
+								tickRotate: -20
 							}}
 						>
 							<LineY
 								data={emissionsTimeseries}
-								x="year"
+								x={(d) => new Date(d.date)}
 								y="emissions"
 								curve="monotone-x"
 								stroke="var(--color-primary)"
-								strokeDasharray="2"
 								strokeWidth={2}
+								strokeDasharray="2"
 							/>
 
-							<Dot data={emissionsTimeseries} x="year" y="emissions" fill="var(--color-primary)" />
+							<Dot
+								data={emissionsTimeseries}
+								x={(d) => new Date(d.date)}
+								y="emissions"
+								fill="var(--color-primary)"
+								r={3}
+							/>
 						</Plot>
 
 						<div class="text-xs opacity-60 mt-2">Emissions in tonnes CO₂e</div>
@@ -174,7 +284,7 @@
 				</div>
 			{/if}
 
-			{#if gasBreakdown.length > 0}
+			{#if gasBreakdown.length > 1}
 				<div class="card bg-base-200 border border-base-300">
 					<div class="card-body">
 						<div class="flex items-center gap-2 mb-4">
@@ -218,26 +328,36 @@
 					<table class="table table-sm">
 						<thead>
 							<tr>
-								<th>Date</th>
+								<th>Year</th>
+								<th>Month</th>
 								<th class="text-right">Emissions</th>
 								<th>Gas</th>
+								<th class="text-right">Activity</th>
 							</tr>
 						</thead>
 						<tbody>
 							{#each currentEmissions as emission}
 								<tr class="hover">
-									<td>{emission.date}</td>
+									<td>{emission.year}</td>
+									<td>{emission.month || '-'}</td>
 									<td class="text-right tabular-nums">{fN(emission.emissionsQuantity)}</td>
 									<td class="text-sm opacity-70">{emission.gas}</td>
+									<td class="text-right tabular-nums text-xs">
+										{#if emission.activity}
+											{fN(emission.activity)} {emission.activityUnits || ''}
+										{:else}
+											-
+										{/if}
+									</td>
 								</tr>
 							{/each}
 						</tbody>
 					</table>
 				</div>
 
-				<div class="mt-4 mb-2">
+				<div class="mt-4 mb-2 pr-section-x">
 					<Pagination
-						count={source.emissions.length}
+						count={allEmissions.length}
 						perPage={ITEMS_PER_PAGE}
 						bind:page={currentPage}
 					/>

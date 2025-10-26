@@ -114,11 +114,11 @@ export const SourceDetailsSchema = v.object({
 	assetType: v.string(),
 	sourceType: v.string(),
 	centroid: SourceCentroidSchema,
-	emissions: v.array(SourceEmissionsTimePeriodSchema),
+	emissions: v.nullable(v.array(SourceEmissionsTimePeriodSchema)),
 	owners: v.nullable(v.array(SourceOwnerSchema)),
-	confidence: v.array(ConfidenceTimePeriodSchema),
+	confidence: v.nullable(v.array(ConfidenceTimePeriodSchema)),
 	totals: SourceTotalsSchema,
-	subsectorRanks: v.array(AssetSubsectorRankSchema)
+	subsectorRanks: v.nullable(v.array(AssetSubsectorRankSchema))
 });
 
 export const SourceByIdParamsSchema = v.object({
