@@ -21,20 +21,6 @@ import {
 	CountryEmissionsRankingsResponseSchema
 } from './schemas/core';
 
-// =============================================================================
-// ENDPOINT DEFINITIONS - Type-safe API endpoint registry
-// =============================================================================
-
-type EndpointDefinition<TParams, TResponse> = {
-	path: string;
-	method: 'GET';
-	paramsSchema: v.BaseSchema<TParams, TParams, v.BaseIssue<unknown>> | undefined;
-	responseSchema: v.BaseSchema<TResponse, TResponse, v.BaseIssue<unknown>> | undefined;
-	_types: {
-		params: TParams;
-		response: TResponse;
-	};
-};
 
 export const endpoints = {
 	// -------------------------------------------------------------------------
@@ -47,21 +33,21 @@ export const endpoints = {
 		responseSchema: SourcesResponseSchema,
 		_types: {} as {
 			params:
-				| {
-						year?: number;
-						gas?: string;
-						sectors?: string[];
-						subsectors?: string[];
-						gadmId?: string;
-						cityId?: string;
-						countryGroup?: string;
-						continent?: string;
-						ownerIds?: string[];
-						limit?: number;
-						offset?: number;
-				  }
-				| undefined;
-			response: SourceSummary[];
+			| {
+				year?: number;
+				gas?: string;
+				sectors?: string[];
+				subsectors?: string[];
+				gadmId?: string;
+				cityId?: string;
+				countryGroup?: string;
+				continent?: string;
+				ownerIds?: string[];
+				limit?: number;
+				offset?: number;
+			}
+			| undefined;
+			response: SourceSummary[] | null;
 		}
 	} as const,
 
@@ -89,18 +75,18 @@ export const endpoints = {
 		responseSchema: AggregatedEmissionsResponseSchema,
 		_types: {} as {
 			params:
-				| {
-						year?: number;
-						gas?: string;
-						sectors?: string[];
-						subsectors?: string[];
-						gadmId?: string;
-						cityId?: string;
-						countryGroup?: string;
-						continent?: string;
-						ownerIds?: string[];
-				  }
-				| undefined;
+			| {
+				year?: number;
+				gas?: string;
+				sectors?: string[];
+				subsectors?: string[];
+				gadmId?: string;
+				cityId?: string;
+				countryGroup?: string;
+				continent?: string;
+				ownerIds?: string[];
+			}
+			| undefined;
 			response: AggregatedEmissionsResponse;
 		}
 	} as const,
@@ -115,16 +101,16 @@ export const endpoints = {
 		responseSchema: CountryEmissionsRankingsResponseSchema,
 		_types: {} as {
 			params:
-				| {
-						gas?: string;
-						start?: string;
-						end?: string;
-						sectors?: string[];
-						subsectors?: string[];
-						countryGroup?: string;
-						continent?: string;
-				  }
-				| undefined;
+			| {
+				gas?: string;
+				start?: string;
+				end?: string;
+				sectors?: string[];
+				subsectors?: string[];
+				countryGroup?: string;
+				continent?: string;
+			}
+			| undefined;
 			response: CountryEmissionsRankingsResponse;
 		}
 	} as const,
@@ -139,14 +125,14 @@ export const endpoints = {
 		responseSchema: undefined,
 		_types: {} as {
 			params:
-				| {
-						name?: string;
-						bbox?: string;
-						level?: 0 | 1 | 2;
-						limit?: number;
-						offset?: number;
-				  }
-				| undefined;
+			| {
+				name?: string;
+				bbox?: string;
+				level?: 0 | 1 | 2;
+				limit?: number;
+				offset?: number;
+			}
+			| undefined;
 			response: AdministrativeArea[];
 		}
 	} as const,
@@ -183,14 +169,14 @@ export const endpoints = {
 		responseSchema: undefined,
 		_types: {} as {
 			params:
-				| {
-						name?: string;
-						country?: string;
-						bbox?: string;
-						limit?: number;
-						offset?: number;
-				  }
-				| undefined;
+			| {
+				name?: string;
+				country?: string;
+				bbox?: string;
+				limit?: number;
+				offset?: number;
+			}
+			| undefined;
 			response: CitiesSearchResult[];
 		}
 	} as const,
@@ -205,12 +191,12 @@ export const endpoints = {
 		responseSchema: undefined,
 		_types: {} as {
 			params:
-				| {
-						name?: string;
-						limit?: number;
-						offset?: number;
-				  }
-				| undefined;
+			| {
+				name?: string;
+				limit?: number;
+				offset?: number;
+			}
+			| undefined;
 			response: OwnersSearchResult[];
 		}
 	} as const,
@@ -343,60 +329,3 @@ export const endpoints = {
 export type EndpointKey = keyof typeof endpoints;
 export type InferParams<K extends EndpointKey> = (typeof endpoints)[K]['_types']['params'];
 export type InferResponse<K extends EndpointKey> = (typeof endpoints)[K]['_types']['response'];
-
-type PangeaCountry = {
-	name: string;
-	name_long: string;
-	pop_est: number;
-	adm0_a3: string;
-	region_un: string;
-	subregion: string;
-	label_x: number;
-	label_y: number;
-};
-
-type PangeaCountryName = {
-	name_long: string;
-	continent: string;
-};
-
-export const pangeaEndpoints = {
-	getRandomCountry: {
-		path: 'https://pangea-countries.pages.dev/random_country',
-		method: 'GET',
-		paramsSchema: undefined,
-		responseSchema: undefined,
-		_types: {} as {
-			params: undefined;
-			response: PangeaCountry;
-		}
-	} as const,
-
-	getCountryNames: {
-		path: 'https://pangea-countries.pages.dev/country_names',
-		method: 'GET',
-		paramsSchema: undefined,
-		responseSchema: undefined,
-		_types: {} as {
-			params: undefined;
-			response: PangeaCountryName[];
-		}
-	} as const,
-
-	getCountryInfo: {
-		path: 'https://pangea-countries.pages.dev/country/:code',
-		method: 'GET',
-		paramsSchema: undefined,
-		responseSchema: undefined,
-		_types: {} as {
-			params: { code: string };
-			response: PangeaCountry;
-		}
-	} as const
-} as const;
-
-export type PangeaEndpointKey = keyof typeof pangeaEndpoints;
-export type InferPangeaParams<K extends PangeaEndpointKey> =
-	(typeof pangeaEndpoints)[K]['_types']['params'];
-export type InferPangeaResponse<K extends PangeaEndpointKey> =
-	(typeof pangeaEndpoints)[K]['_types']['response'];

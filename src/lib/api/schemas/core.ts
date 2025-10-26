@@ -37,7 +37,7 @@ export const SourcesParamsSchema = v.optional(
 	})
 );
 
-export const SourcesResponseSchema = v.array(SourceSummarySchema);
+export const SourcesResponseSchema = v.nullable(v.array(SourceSummarySchema));
 
 // -----------------------------------------------------------------------------
 // Source Details Schemas (GET /v7/sources/:id)

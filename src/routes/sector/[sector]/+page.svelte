@@ -115,7 +115,7 @@
 			{/if}
 		</div>
 
-		{#if sources.length > 0}
+		{#if sources && sources.length > 0}
 			<EmissionSources {sources} subsectors={subsectorNames} />
 		{/if}
 	</div>

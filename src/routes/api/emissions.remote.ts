@@ -1,6 +1,6 @@
 import { query } from '$app/server';
 import * as v from 'valibot';
-import { ct, pangea } from '$lib/api';
+import { ct, ApiError } from '$lib/api';
 
 export const getTopSources = query(
 	v.optional(
@@ -12,7 +12,14 @@ export const getTopSources = query(
 		})
 	),
 	async (filters = {}) => {
-		return ct('getSources', filters);
+		try {
+			return ct('getSources', filters);
+		} catch (error) {
+			if (error instanceof ApiError && error.status === 404) {
+				return [];
+			}
+			throw error;
+		}
 	}
 );
 
@@ -40,7 +47,14 @@ export const getAggregatedEmissions = query(
 		})
 	),
 	async (filters = {}) => {
-		return ct('getAggregatedEmissions', filters);
+		try {
+			return ct('getAggregatedEmissions', filters);
+		} catch (error) {
+			if (error instanceof ApiError && error.status === 404) {
+				return null;
+			}
+			throw error;
+		}
 	}
 );
 
@@ -63,28 +77,4 @@ export const getSectors = query(async () => {
 
 export const getSubsectors = query(async () => {
 	return ct('getSubsectors', undefined);
-});
-
-export const getCountryData = query(v.string(), async (countryCode) => {
-	const rankingsData = await ct('getCountryRankings', undefined);
-
-	const countryRanking = rankingsData.rankings.find((r) => r.country === countryCode);
-	if (!countryRanking) {
-		throw new Error('Country not found');
-	}
-
-	const countryInfo = await pangea('getCountryInfo', { code: countryCode });
-
-	const totalEmissions = countryRanking.emissionsQuantity;
-	const emissionsPerCapita = countryInfo.pop_est > 0 ? totalEmissions / countryInfo.pop_est : 0;
-
-	return {
-		name: countryInfo.name_long,
-		code: countryInfo.adm0_a3,
-		population: countryInfo.pop_est,
-		region: countryInfo.region_un,
-		subregion: countryInfo.subregion,
-		totalEmissions,
-		emissionsPerCapita
-	};
 });

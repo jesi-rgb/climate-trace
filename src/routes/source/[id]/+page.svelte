@@ -1,6 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { fN, formatDate, formatSector } from '$lib/utils';
+	import {
+		fN,
+		formatDate,
+		formatSector,
+		formatActivity,
+		formatEmissionsFactor,
+		getEmissionsFactorUnit,
+		getActivityIcon,
+		getActivityLabel,
+		shouldShowCapacityCard,
+		getCapacityTooltip,
+		formatCapacityFactor,
+		getCapacityLabel
+	} from '$lib/utils';
 	import { getSourceById } from '../../api/source.remote';
 	import {
 		Factory,
@@ -11,10 +24,26 @@
 		Flame,
 		Users,
 		Gauge,
-		Lightning
+		Lightning,
+		CurrencyDollar,
+		Horse,
+		Wind,
+		ChartBar,
+		Trophy
 	} from 'phosphor-svelte';
+
+	const iconMap = {
+		CurrencyDollar,
+		Globe,
+		Horse,
+		Factory,
+		Wind,
+		Lightning,
+		ChartBar
+	};
 	import { Plot, LineY, Dot, formatMonth } from 'svelteplot';
 	import { Pagination } from '$lib/components/ui';
+	import CountrySearch from '$lib/components/ui/CountrySearch.svelte';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -108,7 +137,7 @@
 
 			<div class="flex items-center gap-4">
 				<h1 class="text-4xl font-bold">{source.name || 'Unknown Source'}</h1>
-				<div class="badge badge-primary badge-lg">{source.subsector}</div>
+				<div class="badge badge-primary badge-lg">{formatSector(source.subsector)}</div>
 			</div>
 			<p class="text-lg opacity-70 mt-2">{formatSector(source.sector)}</p>
 		</div>
@@ -121,7 +150,7 @@
 						<h2 class="card-title text-sm font-medium opacity-70">Total Emissions</h2>
 					</div>
 					<p class="text-4xl font-bold mb-1">{fN(totalEmissions)}</p>
-					<p class="text-sm opacity-60">tonnes CO₂e</p>
+					<p class="text-sm opacity-60">tonnes CO₂e (2021-2024)</p>
 				</div>
 			</div>
 
@@ -157,15 +186,20 @@
 				</div>
 			</div>
 
-			{#if source.totals?.capacity}
+			{#if source.totals?.activity}
+				{@const IconComponent = iconMap[getActivityIcon(source.totals.activityUnits)] || ChartBar}
 				<div class="card bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20">
 					<div class="card-body">
 						<div class="flex items-center gap-2 mb-2">
-							<Gauge size={20} weight="fill" class="text-accent" />
-							<h2 class="card-title text-sm font-medium opacity-70">Capacity</h2>
+							<IconComponent size={20} weight="fill" class="text-accent" />
+							<h2 class="card-title text-sm font-medium opacity-70">
+								{getActivityLabel(source.totals.activityUnits)}
+							</h2>
 						</div>
-						<p class="text-4xl font-bold mb-1">{fN(source.totals.capacity)}</p>
-						<p class="text-sm opacity-60">{source.totals.capacityUnits || 'units'}</p>
+						<p class="text-3xl font-bold mb-1">
+							{formatActivity(source.totals.activity, source.totals.activityUnits)}
+						</p>
+						<p class="text-sm opacity-60">{source.totals.activityUnits}</p>
 					</div>
 				</div>
 			{/if}
@@ -187,37 +221,40 @@
 			</div>
 		{/if}
 
-		<div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-			{#if source.totals?.activity}
-				<div class="stat bg-base-200 border border-base-300 rounded-lg">
-					<div class="stat-figure text-primary">
-						<Lightning size={32} weight="fill" />
-					</div>
-					<div class="stat-title">Activity</div>
-					<div class="stat-value text-2xl">{fN(source.totals.activity)}</div>
-					<div class="stat-desc">{source.totals.activityUnits || 'units'}</div>
-				</div>
-			{/if}
-			{#if source.totals?.capacityFactor !== undefined}
-				<div class="stat bg-base-200 border border-base-300 rounded-lg">
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+			{#if source.totals?.capacityFactor !== undefined && source.totals?.activityUnits && shouldShowCapacityCard(source.totals.activityUnits)}
+				<div
+					class="stat bg-base-200 border border-base-300 rounded-lg"
+					title={getCapacityTooltip(source.totals.activityUnits)}
+				>
 					<div class="stat-figure text-secondary">
 						<Gauge size={32} weight="fill" />
 					</div>
-					<div class="stat-title">Capacity Factor</div>
+					<div class="stat-title">{getCapacityLabel(source.totals.activityUnits)}</div>
 					<div class="stat-value text-2xl">
-						{(source.totals.capacityFactor * 100).toFixed(1)}%
+						{formatCapacityFactor(
+							source.totals.capacityFactor,
+							source.totals.activityUnits,
+							source.totals.capacity
+						)}
 					</div>
-					<div class="stat-desc">efficiency</div>
+					<div class="stat-desc opacity-50 text-xs">
+						{getCapacityTooltip(source.totals.activityUnits)}
+					</div>
 				</div>
 			{/if}
-			{#if source.totals?.emissionsFactor}
+			{#if source.totals?.emissionsFactor && source.totals?.activityUnits}
 				<div class="stat bg-base-200 border border-base-300 rounded-lg">
 					<div class="stat-figure text-warning">
 						<Flame size={32} weight="fill" />
 					</div>
-					<div class="stat-title">Emissions Factor</div>
-					<div class="stat-value text-2xl">{fN(source.totals.emissionsFactor)}</div>
-					<div class="stat-desc">{source.totals.emissionsFactorUnits || 'units'}</div>
+					<div class="stat-title">Emissions Intensity</div>
+					<div class="stat-value text-xl">
+						{formatEmissionsFactor(source.totals.emissionsFactor, source.totals.activityUnits)}
+					</div>
+					<div class="stat-desc">
+						{getEmissionsFactorUnit(source.totals.emissionsFactor, source.totals.activityUnits)}
+					</div>
 				</div>
 			{/if}
 			{#if gasBreakdown.length === 1}
@@ -226,8 +263,18 @@
 						<Flame size={32} weight="fill" />
 					</div>
 					<div class="stat-title">Gas Type</div>
-					<div class="stat-value text-2xl">{gasBreakdown[0].gas}</div>
-					<div class="stat-desc">{fN(gasBreakdown[0].quantity)} tonnes</div>
+					<div class="stat-value text-2xl">{fN(gasBreakdown[0].quantity)}</div>
+					<div class="stat-desc">{gasBreakdown[0].gas}, tonnes</div>
+				</div>
+			{/if}
+			{#if source.subsectorRanks && source.subsectorRanks.length > 0}
+				<div class="stat bg-base-200 border border-base-300 rounded-lg">
+					<div class="stat-figure text-accent">
+						<Trophy size={32} weight="fill" />
+					</div>
+					<div class="stat-title">Subsector Rank</div>
+					<div class="stat-value text-2xl">#{source.subsectorRanks[0].rank}</div>
+					<div class="stat-desc">in {formatSector(source.subsector)}</div>
 				</div>
 			{/if}
 		</div>

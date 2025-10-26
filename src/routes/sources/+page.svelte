@@ -16,12 +16,11 @@
 		Shovel,
 		Trash
 	} from 'phosphor-svelte';
-	import CountrySearch from '$lib/components/ui/CountrySearch.svelte';
 	import { onMount } from 'svelte';
 	import type { SubSector } from '$lib/api';
 
 	const ITEMS_PER_PAGE = 20;
-	const FETCH_CHUNK_SIZE = 500;
+	const FETCH_CHUNK_SIZE = 10000;
 
 	const sectorIcons: Record<string, any> = {
 		'fossil-fuel-operations': GasCan,
@@ -79,13 +78,19 @@
 			limit: FETCH_CHUNK_SIZE,
 			offset: chunkOffset,
 			subsectors: selectedSubsectors.length > 0 ? selectedSubsectors : undefined,
-			sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
 			gas: selectedGas
 		})
 	);
+	// $inspect({
+	// 	limit: FETCH_CHUNK_SIZE,
+	// 	offset: chunkOffset,
+	// 	subsectors: selectedSubsectors.length > 0 ? selectedSubsectors : undefined,
+	// 	sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
+	// 	gas: selectedGas
+	// });
 
 	let paginatedSources = $derived.by(() => {
-		if (!chunkData) return [];
+		if (!chunkData || chunkData === null) return [];
 		const indexInChunk = ((currentPage - 1) * ITEMS_PER_PAGE) % FETCH_CHUNK_SIZE;
 		let sources = chunkData.slice(indexInChunk, indexInChunk + ITEMS_PER_PAGE);
 
@@ -103,15 +108,6 @@
 			selectedSubsectors = selectedSubsectors.filter((s) => s !== subsector);
 		} else {
 			selectedSubsectors = [...selectedSubsectors, subsector];
-		}
-		updateFilters({ page: 1 });
-	}
-
-	function toggleSector(sector: string) {
-		if (selectedSectors.includes(sector)) {
-			selectedSectors = selectedSectors.filter((s) => s !== sector);
-		} else {
-			selectedSectors = [...selectedSectors, sector];
 		}
 		updateFilters({ page: 1 });
 	}
@@ -152,7 +148,7 @@
 					</div>
 					<div class="filter">
 						<input
-							class="btn filter-reset"
+							class="btn filter-reset btn-sm"
 							type="radio"
 							name="gas"
 							value="co2e_100yr"
@@ -164,7 +160,7 @@
 							}}
 						/>
 						<input
-							class="btn"
+							class="btn btn-sm"
 							type="radio"
 							name="gas"
 							value="co2"
@@ -176,7 +172,7 @@
 							}}
 						/>
 						<input
-							class="btn"
+							class="btn btn-sm"
 							type="radio"
 							name="gas"
 							value="ch4"
@@ -188,7 +184,7 @@
 							}}
 						/>
 						<input
-							class="btn"
+							class="btn btn-sm"
 							type="radio"
 							name="gas"
 							value="n2o"
@@ -214,52 +210,60 @@
 					onPageChange={handlePageChange}
 				/>
 			</div>
-			<div class="overflow-x-auto">
-				<table class="table">
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Sector</th>
-							<th>Subsector</th>
-							<th>Country</th>
-							<th>Asset Type</th>
-							<th>Source Type</th>
-							<th>Emissions (tonnes CO₂e)</th>
-							<th>Year</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each paginatedSources as source}
-							<tr class="hover">
-								<td>
-									<a href="/source/{source.id}" class="link link-hover">
-										{source.name}
-									</a>
-								</td>
-								<td>
-									<a href="/sector/{source.sector}" class="link link-hover">
-										{formatSector(source.sector)}
-									</a>
-								</td>
-								<td>{formatSector(source.subsector)}</td>
-								<td>
-									<a href="/country/{source.country}" class="link link-hover">
-										{source.country}
-									</a>
-								</td>
-								<td>{source.assetType}</td>
-								<td>{formatSector(source.sourceType)}</td>
-								<td class="tabular-nums text-right">{fN(source.emissionsQuantity)}</td>
-								<td>{source.year}</td>
-							</tr>
-						{:else}
+			{#if paginatedSources.length > 0}
+				<div class="overflow-x-auto">
+					<table class="table">
+						<thead>
 							<tr>
-								<td colspan="8" class="text-center text-muted">No sources found</td>
+								<th>Name</th>
+								<th>Sector</th>
+								<th>Subsector</th>
+								<th>Country</th>
+								<th>Asset Type</th>
+								<th>Source Type</th>
+								<th>Emissions (tonnes CO₂e)</th>
+								<th>Year</th>
 							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+						</thead>
+						<tbody>
+							{#each paginatedSources as source}
+								<tr class="hover">
+									<td>
+										<a href="/source/{source.id}" class="link link-hover">
+											{source.name}
+										</a>
+									</td>
+									<td>
+										<a href="/sector/{source.sector}" class="link link-hover">
+											{formatSector(source.sector)}
+										</a>
+									</td>
+									<td>{formatSector(source.subsector)}</td>
+									<td>
+										<a href="/country/{source.country}" class="link link-hover">
+											{source.country}
+										</a>
+									</td>
+									<td>{source.assetType}</td>
+									<td>{formatSector(source.sourceType)}</td>
+									<td class="tabular-nums text-right">{fN(source.emissionsQuantity)}</td>
+									<td>{source.year}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{:else}
+				<div class="text-center my-20 text-xl space-y-4">
+					<p class="text-center text-xl text-error">No sources found</p>
+					<button
+						class="btn btn-primary"
+						onclick={() => {
+							selectedSubsectors = [];
+						}}>Clear filters</button
+					>
+				</div>
+			{/if}
 		</div>
 	</div>
 	<div class="drawer-side h-full">

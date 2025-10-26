@@ -1,6 +1,6 @@
 import { query } from '$app/server';
 import * as v from 'valibot';
-import { ct, pangea } from '$lib/api';
+import { ct } from '$lib/api';
 
 export const getCountryData = query(v.string(), async (countryCode) => {
 	const rankingsData = await ct('getCountryRankings', undefined);
@@ -10,25 +10,23 @@ export const getCountryData = query(v.string(), async (countryCode) => {
 		throw new Error('Country not found');
 	}
 
-	const pangeaCountry = await pangea('getCountryInfo', { code: countryCode });
-
 	const totalEmissions = countryRanking.emissionsQuantity;
-	const emissionsPerCapita = pangeaCountry.pop_est > 0 ? totalEmissions / pangeaCountry.pop_est : 0;
+	const emissionsPerCapita = countryRanking.emissionsPerCapita;
+	const population = emissionsPerCapita > 0 ? Math.round(totalEmissions / emissionsPerCapita) : 0;
 
 	return {
-		name: pangeaCountry.name_long,
-		code: pangeaCountry.adm0_a3,
-		population: pangeaCountry.pop_est,
-		region: pangeaCountry.region_un,
-		subregion: pangeaCountry.subregion,
+		name: countryRanking.name,
+		code: countryRanking.country,
+		population,
+		region: '',
+		subregion: '',
 		totalEmissions,
 		emissionsPerCapita
 	};
 });
 
 export const getCountryEmissionsBySector = query(v.string(), async (countryCode) => {
-	const pangeaCountry = await pangea('getCountryInfo', { code: countryCode });
-	return ct('getAggregatedEmissions', { gadmId: pangeaCountry.adm0_a3 });
+	return ct('getAggregatedEmissions', { gadmId: countryCode });
 });
 
 export const getCountrySources = query(
@@ -37,7 +35,6 @@ export const getCountrySources = query(
 		limit: v.optional(v.number())
 	}),
 	async ({ countryCode, limit = 50 }) => {
-		const pangeaCountry = await pangea('getCountryInfo', { code: countryCode });
-		return ct('getSources', { gadmId: pangeaCountry.adm0_a3, limit });
+		return ct('getSources', { gadmId: countryCode, limit });
 	}
 );

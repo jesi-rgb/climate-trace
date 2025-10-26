@@ -1,14 +1,5 @@
 import * as v from 'valibot';
-import {
-	endpoints,
-	type EndpointKey,
-	type InferParams,
-	type InferResponse,
-	pangeaEndpoints,
-	type PangeaEndpointKey,
-	type InferPangeaParams,
-	type InferPangeaResponse
-} from './endpoints';
+import { endpoints, type EndpointKey, type InferParams, type InferResponse } from './endpoints';
 import { apiCache } from './cache';
 
 const BASE_URL = 'https://api.climatetrace.org';
@@ -136,57 +127,6 @@ export async function getAggregatedEmissions(params?: InferParams<'getAggregated
  */
 export async function getCountryRankings(params?: InferParams<'getCountryRankings'>) {
 	return ct('getCountryRankings', params);
-}
-
-export async function pangea<K extends PangeaEndpointKey>(
-	key: K,
-	params?: InferPangeaParams<K>
-): Promise<InferPangeaResponse<K>> {
-	const cached = apiCache.get<InferPangeaResponse<K>>(key, params);
-	if (cached !== null) {
-		return cached;
-	}
-
-	const endpoint = pangeaEndpoints[key];
-
-	let url = endpoint.path;
-
-	if (params) {
-		const paramsObj = params as Record<string, unknown>;
-		Object.entries(paramsObj).forEach(([paramKey, value]) => {
-			if (value !== undefined && url.includes(`:${paramKey}`)) {
-				url = url.replace(`:${paramKey}`, String(value));
-			}
-		});
-	}
-
-	let response: Response;
-	try {
-		response = await fetch(url);
-	} catch (error) {
-		throw new Error(`Network error calling ${key}: ${error}`);
-	}
-
-	if (!response.ok) {
-		const errorText = await response.text().catch(() => 'Unknown error');
-		throw new ApiError(
-			`API request failed: ${response.status} ${response.statusText} - ${errorText}`,
-			response.status,
-			response.statusText
-		);
-	}
-
-	let data: unknown;
-	try {
-		data = await response.json();
-	} catch (error) {
-		throw new Error(`Failed to parse JSON response from ${key}: ${error}`);
-	}
-
-	const result = data as InferPangeaResponse<K>;
-	apiCache.set(key, params, result);
-
-	return result;
 }
 
 export const apiCall = ct;

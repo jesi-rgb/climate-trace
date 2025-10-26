@@ -105,9 +105,13 @@
 
 			<div class="flex items-center gap-4">
 				<h1 class="text-4xl font-bold">{data.name}</h1>
-				<div class="badge badge-primary badge-lg">{data.subregion}</div>
+				{#if data.subregion}
+					<div class="badge badge-primary badge-lg">{data.subregion}</div>
+				{/if}
 			</div>
-			<p class="text-lg opacity-70 mt-2">{data.region}</p>
+			{#if data.region}
+				<p class="text-lg opacity-70 mt-2">{data.region}</p>
+			{/if}
 		</div>
 
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 join-horizontal mb-4">

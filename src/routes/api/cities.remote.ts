@@ -1,6 +1,6 @@
 import { query } from '$app/server';
 import * as v from 'valibot';
-import { ct } from '$lib/api';
+import { ct, ApiError } from '$lib/api';
 
 export const searchCities = query(
 	v.optional(
@@ -13,6 +13,13 @@ export const searchCities = query(
 		})
 	),
 	async (params = {}) => {
-		return ct('searchCities', params);
+		try {
+			return ct('searchCities', params);
+		} catch (error) {
+			if (error instanceof ApiError && error.status === 404) {
+				return [];
+			}
+			throw error;
+		}
 	}
 );
