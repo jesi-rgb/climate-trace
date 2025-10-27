@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Pagination } from 'bits-ui';
 	import { CaretLeft, CaretRight } from 'phosphor-svelte';
+	import Body from '../type/Body.svelte';
 
 	interface Props {
 		count: number;
@@ -22,7 +23,7 @@
 <Pagination.Root bind:page {count} {perPage} {siblingCount} {onPageChange}>
 	{#snippet children({ pages, range })}
 		<div class="flex flex-col items-end gap-4">
-			<div class="join">
+			<div class="join join-horizontal">
 				<Pagination.PrevButton class="join-item btn btn-sm">
 					<CaretLeft class="size-5" />
 				</Pagination.PrevButton>
@@ -47,9 +48,9 @@
 				</Pagination.NextButton>
 			</div>
 
-			<p class="text-xs opacity-60">
+			<Body size="12" class="text-muted">
 				Showing {range.start} - {range.end} of {count}
-			</p>
+			</Body>
 		</div>
 	{/snippet}
 </Pagination.Root>

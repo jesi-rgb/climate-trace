@@ -4,6 +4,10 @@
 	import { getSectorDetails, getSectorEmissions, getSectorSources } from '../../api/sector.remote';
 	import { Lightning, Factory, XCircle, Stack } from 'phosphor-svelte';
 	import EmissionSources from '$lib/components/sector/EmissionSources.svelte';
+	import Heading from '$lib/components/type/Heading.svelte';
+	import Body from '$lib/components/type/Body.svelte';
+	import Figure from '$lib/components/type/Figure.svelte';
+	import { Card } from '$lib/components/ui';
 
 	let sector = $derived(page.params.sector!);
 	let details = $derived(await getSectorDetails(sector));
@@ -33,7 +37,7 @@
 		<div class="alert alert-error max-w-md">
 			<XCircle size={24} weight="bold" />
 			<div>
-				<h3 class="font-bold">Sector not found</h3>
+				<Heading as="h3">Sector not found</Heading>
 				<a href="/" class="link link-hover">Return to home</a>
 			</div>
 		</div>
@@ -50,45 +54,41 @@
 			</div>
 
 			<div class="flex items-center gap-4">
-				<h1 class="text-4xl font-bold">{formatSector(details.name)}</h1>
+				<Heading size="h1">{formatSector(details.name)}</Heading>
 				<div class="badge badge-primary badge-lg">{subsectorCount} subsectors</div>
 			</div>
 		</div>
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 join-horizontal mb-4">
-			<div class="card bg-gradient-to-br from-error/10 to-error/5 border border-error/20">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Lightning size={20} weight="fill" class="text-error" />
-						<h2 class="card-title text-sm font-medium opacity-70">Total Emissions</h2>
-					</div>
-					<p class="text-4xl font-bold mb-1">{fN(totalEmissions)}</p>
-					<p class="text-sm opacity-60">tonnes CO₂e</p>
-				</div>
-			</div>
+			<Figure
+				icon={Lightning}
+				title="Total Emissions"
+				value={fN(totalEmissions)}
+				subtitle="tonnes CO₂e"
+				color="primary"
+			/>
 
-			<div class="card bg-gradient-to-br from-info/10 to-info/5 border border-info/20">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Stack size={20} weight="fill" class="text-info" />
-						<h2 class="card-title text-sm font-medium opacity-70">Subsectors</h2>
-					</div>
-					<p class="text-4xl font-bold mb-1">{subsectorCount}</p>
-					<p class="text-sm opacity-60">categories</p>
-				</div>
-			</div>
+			<Figure
+				icon={Stack}
+				title="Subsectors"
+				value={subsectorCount}
+				subtitle="categories"
+				color="info"
+			/>
 		</div>
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 			{#if topSubsectors.length > 0}
-				<div class="card bg-base-200 border border-base-300">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-4">
+				<Card>
+					{#snippet title()}
+						<div class="flex items-center gap-2">
 							<Factory size={24} weight="fill" class="text-secondary" />
-							<h2 class="card-title">Top Subsectors by Emissions</h2>
+							<Heading as="h2" class="card-title">Top Subsectors by Emissions</Heading>
 						</div>
+					{/snippet}
 
-						<div class="space-y-3">
+					{#snippet content()}
+						<div class="px-4 pb-4 space-y-3">
 							{#each topSubsectors as subsector}
 								<div>
 									<div class="flex justify-between items-center mb-1">
@@ -110,8 +110,8 @@
 								</div>
 							{/each}
 						</div>
-					</div>
-				</div>
+					{/snippet}
+				</Card>
 			{/if}
 		</div>
 

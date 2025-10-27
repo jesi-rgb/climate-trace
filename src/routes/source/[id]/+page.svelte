@@ -42,8 +42,9 @@
 		ChartBar
 	};
 	import { Plot, LineY, Dot, formatMonth } from 'svelteplot';
-	import { Pagination } from '$lib/components/ui';
+	import { Pagination, Card } from '$lib/components/ui';
 	import CountrySearch from '$lib/components/ui/CountrySearch.svelte';
+	import Figure from '$lib/components/type/Figure.svelte';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -64,6 +65,7 @@
 	);
 
 	let source = $derived(yearlyData[yearlyData.length - 1]);
+	console.log(source);
 
 	let currentPage = $state(1);
 
@@ -142,204 +144,155 @@
 			<p class="text-lg opacity-70 mt-2">{formatSector(source.sector)}</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-4 gap-4 join-horizontal mb-4">
-			<div class="card bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Flame size={20} weight="fill" class="text-warning" />
-						<h2 class="card-title text-sm font-medium opacity-70">Total Emissions</h2>
-					</div>
-					<p class="text-4xl font-bold mb-1">{fN(totalEmissions)}</p>
-					<p class="text-sm opacity-60">tonnes CO₂e (2021-2024)</p>
-				</div>
-			</div>
+		<div class="grid grid-cols-1 lg:grid-cols-4 gap-2 join-horizontal mb-4">
+			<Figure
+				icon={Flame}
+				title="Total Emissions"
+				value={fN(totalEmissions)}
+				subtitle="tonnes CO₂e (2021-2024)"
+				color="warning"
+			/>
 
-			<div class="card bg-gradient-to-br from-info/10 to-info/5 border border-info/20">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Globe size={20} weight="fill" class="text-info" />
-						<h2 class="card-title text-sm font-medium opacity-70">Country</h2>
-					</div>
-					<p class="text-4xl font-bold mb-1">
-						<a href="/country/{source.country}" class="link link-hover">
-							{source.country}
-						</a>
-					</p>
-					<p class="text-sm opacity-60">location</p>
-				</div>
-			</div>
+			<Figure
+				icon={Globe}
+				title="Country"
+				value={source.country}
+				subtitle="location"
+				color="info"
+				href="/country/{source.country}"
+			/>
 
-			<div
-				class="card bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20"
-			>
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Factory size={20} weight="fill" class="text-secondary" />
-						<h2 class="card-title text-sm font-medium opacity-70">Sector</h2>
-					</div>
-					<p class="text-2xl font-bold mb-1">
-						<a href="/sector/{source.sector}" class="link link-hover">
-							{formatSector(source.sector)}
-						</a>
-					</p>
-					<p class="text-sm opacity-60">industry type</p>
-				</div>
-			</div>
+			<Figure
+				icon={Factory}
+				title="Sector"
+				value={formatSector(source.sector)}
+				subtitle="industry type"
+				color="secondary"
+			/>
 
 			{#if source.totals?.activity}
 				{@const IconComponent = iconMap[getActivityIcon(source.totals.activityUnits)] || ChartBar}
-				<div class="card bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-2">
-							<IconComponent size={20} weight="fill" class="text-accent" />
-							<h2 class="card-title text-sm font-medium opacity-70">
-								{getActivityLabel(source.totals.activityUnits)}
-							</h2>
-						</div>
-						<p class="text-3xl font-bold mb-1">
-							{formatActivity(source.totals.activity, source.totals.activityUnits)}
-						</p>
-						<p class="text-sm opacity-60">{source.totals.activityUnits}</p>
-					</div>
-				</div>
+				<Figure
+					icon={IconComponent}
+					title={getActivityLabel(source.totals.activityUnits)}
+					value={formatActivity(source.totals.activity, source.totals.activityUnits)}
+					subtitle={source.totals.activityUnits}
+					color="neutral-content"
+				/>
 			{/if}
-		</div>
 
-		{#if source.owners && source.owners.length > 0}
-			<div class="card bg-base-200 border border-base-300 mb-6">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-4">
-						<Users size={24} weight="fill" class="text-info" />
-						<h2 class="card-title">Owners</h2>
-					</div>
-					<div class="flex flex-wrap gap-2">
-						{#each source.owners as owner}
-							<a href="/owners?id={owner.id}" class="badge badge-lg badge-outline">{owner.name}</a>
-						{/each}
-					</div>
-				</div>
-			</div>
-		{/if}
-
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
 			{#if source.totals?.capacityFactor !== undefined && source.totals?.activityUnits && shouldShowCapacityCard(source.totals.activityUnits)}
-				<div
-					class="stat bg-base-200 border border-base-300 rounded-lg"
-					title={getCapacityTooltip(source.totals.activityUnits)}
-				>
-					<div class="stat-figure text-secondary">
-						<Gauge size={32} weight="fill" />
-					</div>
-					<div class="stat-title">{getCapacityLabel(source.totals.activityUnits)}</div>
-					<div class="stat-value text-2xl">
-						{formatCapacityFactor(
-							source.totals.capacityFactor,
-							source.totals.activityUnits,
-							source.totals.capacity
-						)}
-					</div>
-					<div class="stat-desc opacity-50 text-xs">
-						{getCapacityTooltip(source.totals.activityUnits)}
-					</div>
-				</div>
+				<Figure
+					icon={Gauge}
+					title={getCapacityLabel(source.totals.activityUnits)}
+					value={formatCapacityFactor(
+						source.totals.capacityFactor,
+						source.totals.activityUnits,
+						source.totals.capacity
+					)}
+					subtitle={getCapacityTooltip(source.totals.activityUnits)}
+					color="info"
+				/>
 			{/if}
 			{#if source.totals?.emissionsFactor && source.totals?.activityUnits}
-				<div class="stat bg-base-200 border border-base-300 rounded-lg">
-					<div class="stat-figure text-warning">
-						<Flame size={32} weight="fill" />
-					</div>
-					<div class="stat-title">Emissions Intensity</div>
-					<div class="stat-value text-xl">
-						{formatEmissionsFactor(source.totals.emissionsFactor, source.totals.activityUnits)}
-					</div>
-					<div class="stat-desc">
-						{getEmissionsFactorUnit(source.totals.emissionsFactor, source.totals.activityUnits)}
-					</div>
-				</div>
+				<Figure
+					icon={Flame}
+					title="Emissions Intensity"
+					value={formatEmissionsFactor(source.totals.emissionsFactor, source.totals.activityUnits)}
+					subtitle={getEmissionsFactorUnit(
+						source.totals.emissionsFactor,
+						source.totals.activityUnits
+					)}
+					color="error"
+				/>
 			{/if}
 			{#if gasBreakdown.length === 1}
-				<div class="stat bg-base-200 border border-base-300 rounded-lg">
-					<div class="stat-figure text-error">
-						<Flame size={32} weight="fill" />
-					</div>
-					<div class="stat-title">Gas Type</div>
-					<div class="stat-value text-2xl">{fN(gasBreakdown[0].quantity)}</div>
-					<div class="stat-desc">{gasBreakdown[0].gas}, tonnes</div>
-				</div>
+				<Figure
+					icon={Flame}
+					title="Gas Type"
+					value={fN(gasBreakdown[0].quantity)}
+					subtitle="{gasBreakdown[0].gas}, tonnes"
+					color="warning"
+				/>
 			{/if}
 			{#if source.subsectorRanks && source.subsectorRanks.length > 0}
-				<div class="stat bg-base-200 border border-base-300 rounded-lg">
-					<div class="stat-figure text-accent">
-						<Trophy size={32} weight="fill" />
-					</div>
-					<div class="stat-title">Subsector Rank</div>
-					<div class="stat-value text-2xl">#{source.subsectorRanks[0].rank}</div>
-					<div class="stat-desc">in {formatSector(source.subsector)}</div>
-				</div>
+				<Figure
+					icon={Trophy}
+					title="Subsector Rank"
+					value="#{source.subsectorRanks[0].rank}"
+					subtitle="in {formatSector(source.subsector)}"
+					color="secondary"
+				/>
 			{/if}
 		</div>
 
 		<div class="mb-8">
 			{#if emissionsTimeseries.length > 0}
-				<div class="card bg-base-200 border border-base-300">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-4">
+				<Card>
+					{#snippet title()}
+						<div class="flex items-center gap-2">
 							<ChartLine size={24} weight="bold" class="text-accent" />
 							<h2 class="card-title">Emissions Timeline</h2>
 						</div>
+					{/snippet}
 
-						<Plot
-							inset={15}
-							height={250}
-							y={{
-								grid: true,
-								nice: true,
-								tickFormat(d) {
-									return fN(d.valueOf() as number);
-								}
-							}}
-							x={{
-								grid: true,
-								interval: '1 quarter',
-								tickFormat(d) {
-									return formatDate(d);
-								},
-								tickRotate: -20
-							}}
-						>
-							<LineY
-								data={emissionsTimeseries}
-								x={(d) => new Date(d.date)}
-								y="emissions"
-								curve="monotone-x"
-								stroke="var(--color-primary)"
-								strokeWidth={2}
-								strokeDasharray="2"
-							/>
+					{#snippet content()}
+						<div class="px-4 pb-4">
+							<Plot
+								inset={15}
+								height={250}
+								y={{
+									grid: true,
+									nice: true,
+									tickFormat(d) {
+										return fN(d.valueOf() as number);
+									}
+								}}
+								x={{
+									grid: true,
+									interval: '1 quarter',
+									tickFormat(d) {
+										return formatDate(d);
+									},
+									tickRotate: -20
+								}}
+							>
+								<LineY
+									data={emissionsTimeseries}
+									x={(d) => new Date(d.date)}
+									y="emissions"
+									curve="monotone-x"
+									stroke="var(--color-primary)"
+									strokeWidth={2}
+									strokeDasharray="2"
+								/>
 
-							<Dot
-								data={emissionsTimeseries}
-								x={(d) => new Date(d.date)}
-								y="emissions"
-								fill="var(--color-primary)"
-								r={3}
-							/>
-						</Plot>
+								<Dot
+									data={emissionsTimeseries}
+									x={(d) => new Date(d.date)}
+									y="emissions"
+									fill="var(--color-primary)"
+									r={3}
+								/>
+							</Plot>
 
-						<div class="text-xs opacity-60 mt-2">Emissions in tonnes CO₂e</div>
-					</div>
-				</div>
+							<div class="text-xs opacity-60 mt-2">Emissions in tonnes CO₂e</div>
+						</div>
+					{/snippet}
+				</Card>
 			{/if}
 
 			{#if gasBreakdown.length > 1}
-				<div class="card bg-base-200 border border-base-300">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-4">
+				<Card>
+					{#snippet title()}
+						<div class="flex items-center gap-2">
 							<Flame size={24} weight="fill" class="text-error" />
 							<h2 class="card-title">Gas Breakdown</h2>
 						</div>
+					{/snippet}
 
-						<div class="space-y-3">
+					{#snippet content()}
+						<div class="px-4 pb-4 space-y-3">
 							{#each gasBreakdown as gas}
 								<div>
 									<div class="flex justify-between items-center mb-1">
@@ -359,18 +312,39 @@
 								</div>
 							{/each}
 						</div>
-					</div>
-				</div>
+					{/snippet}
+				</Card>
 			{/if}
 		</div>
 
-		<div class="card bg-base-200 border border-base-300">
-			<div class="card-body py-2 px-0">
-				<div class="flex items-center gap-2 ml-3">
-					<MapPin size={14} weight="fill" class="text-primary" />
+		{#if source.owners && source.owners.length > 0}
+			<Card class="mb-6">
+				{#snippet title()}
+					<div class="flex items-center gap-2">
+						<Users size={24} weight="fill" class="text-info" />
+						<h2 class="card-title">Owners</h2>
+					</div>
+				{/snippet}
+
+				{#snippet content()}
+					<div class="px-4 pb-4 flex flex-wrap gap-2">
+						{#each source.owners as owner}
+							<a href="/owners?id={owner.id}" class="badge badge-lg badge-outline">{owner.name}</a>
+						{/each}
+					</div>
+				{/snippet}
+			</Card>
+		{/if}
+
+		<Card>
+			{#snippet title()}
+				<div class="flex items-center gap-2">
+					<MapPin size={18} weight="fill" class="text-primary" />
 					<h2 class="card-title text-lg">Detailed Emissions Timeline</h2>
 				</div>
+			{/snippet}
 
+			{#snippet content()}
 				<div class="overflow-x-auto">
 					<table class="table table-sm">
 						<thead>
@@ -409,7 +383,7 @@
 						bind:page={currentPage}
 					/>
 				</div>
-			</div>
-		</div>
+			{/snippet}
+		</Card>
 	</div>
 {/if}

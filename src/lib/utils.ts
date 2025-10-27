@@ -83,7 +83,7 @@ const unitRegistry: Record<string, UnitConfig> = {
 	},
 	t: {
 		label: 'Production Volume',
-		format: (val) => `${fN(val / 1000, 1)}K tonnes`,
+		format: (val) => `${fN(val, 1)} tonnes`,
 		phosphorIcon: 'Factory',
 		capacityMeaning: 'throughput',
 		showCapacityCard: true,
@@ -116,6 +116,18 @@ const unitRegistry: Record<string, UnitConfig> = {
 			baseUnit: 'MWh',
 			display: (val) => `${fN(val, 2)} t CO₂e`
 		}
+	},
+	't of alumina/aluminum': {
+		label: 'Alumina/Aluminum Production',
+		format: (val) => `${fN(val, 2)} tonnes`,
+		phosphorIcon: 'Package',
+		capacityMeaning: 'utilization',
+		showCapacityCard: true,
+		emissionsFactorConfig: {
+			multiplier: 1000,
+			baseUnit: 'tonne',
+			display: (val) => `${fN(val, 0)} kg CO₂e`
+		}
 	}
 };
 
@@ -130,7 +142,7 @@ const getUnitConfig = (unit: string): UnitConfig => {
 			emissionsFactorConfig: {
 				multiplier: 1,
 				baseUnit: unit,
-				display: (val) => `${fN(val, 4)} t CO₂e`
+				display: (val) => `${fN(val, 2)} t CO₂e`
 			}
 		}
 	);
@@ -179,10 +191,10 @@ export const getCapacityTooltip = (unit: string) => {
 export const formatCapacityFactor = (capacityFactor: number, unit: string, capacity?: number) => {
 	const config = getUnitConfig(unit);
 	if (config.capacityMeaning === 'utilization') {
-		if (capacity !== undefined && capacity > 0) {
-			return `${fN((capacityFactor / capacity) * 100, 0)}%`;
+		if (capacity !== undefined && capacity > 0 && capacityFactor > 2) {
+			return `${fN((capacityFactor / capacity) * 100, 1)}%`;
 		}
-		return `${fN(capacityFactor * 100, 0)}%`;
+		return `${fN(capacityFactor * 100, 1)}%`;
 	}
 	if (config.capacityMeaning === 'area' || config.capacityMeaning === 'spatial') {
 		return `${fN(capacityFactor, 0)} ha`;

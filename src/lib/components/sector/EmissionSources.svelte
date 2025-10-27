@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fN, formatSector } from '$lib/utils';
 	import { Factory } from 'phosphor-svelte';
-	import { Pagination } from '$lib/components/ui';
+	import { Pagination, Card } from '$lib/components/ui';
 	import type { SourceSummary } from '$lib/api';
 
 	interface Props {
@@ -55,86 +55,88 @@
 	}
 </script>
 
-<div class="card bg-base-200 border border-base-300">
-	<div class="card-body">
-		<div class="flex items-center gap-2 mb-4">
+<Card>
+	{#snippet title()}
+		<div class="flex items-center gap-2">
 			<Factory size={24} weight="bold" class="text-warning" />
 			<h2 class="card-title">Top Emission Sources</h2>
 		</div>
+	{/snippet}
 
-		<div class="mb-4">
-			<div class="flex items-center justify-between mb-2">
-				<span class="label-text font-medium">Filter by Subsector</span>
-				{#if selectedSubsector}
-					<button
-						type="button"
-						class="btn btn-ghost btn-xs"
-						onclick={() => (selectedSubsector = null)}
-					>
-						Clear
-					</button>
-				{/if}
+	{#snippet content()}
+		<div class="px-4 pb-4 space-y-4">
+			<div>
+				<div class="flex items-center justify-between mb-2">
+					<span class="label-text font-medium">Filter by Subsector</span>
+					{#if selectedSubsector}
+						<button
+							type="button"
+							class="btn btn-ghost btn-xs"
+							onclick={() => (selectedSubsector = null)}
+						>
+							Clear
+						</button>
+					{/if}
+				</div>
+				<div class="filter">
+					{#each subsectors as subsector}
+						<input
+							class="btn {selectedSubsector === subsector ? '' : 'filter-reset'}"
+							type="radio"
+							name="subsector-filter"
+							aria-label={formatSector(subsector)}
+							checked={selectedSubsector === subsector}
+							onchange={() => toggleSubsector(subsector)}
+						/>
+					{/each}
+				</div>
 			</div>
-			<div class="filter">
-				{#each subsectors as subsector}
-					<input
-						class="btn {selectedSubsector === subsector ? '' : 'filter-reset'}"
-						type="radio"
-						name="subsector-filter"
-						aria-label={formatSector(subsector)}
-						checked={selectedSubsector === subsector}
-						onchange={() => toggleSubsector(subsector)}
-					/>
-				{/each}
-			</div>
-		</div>
 
-		<div class="mb-4">
 			<Pagination
 				count={totalCount}
 				perPage={ITEMS_PER_PAGE}
 				bind:page={currentPage}
 				onPageChange={handlePageChange}
 			/>
-		</div>
 
-		<div class="overflow-x-auto">
-			<table class="table table-sm">
-				<thead>
-					<tr>
-						<th>Source Name</th>
-						<th>Country</th>
-						<th>Subsector</th>
-						<th class="text-right">
-							<button type="button" class="link link-hover" onclick={toggleSort}>
-								Emissions {sortOrder === 'desc' ? '↓' : '↑'}
-							</button>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each paginatedSources as source}
-						<tr class="hover">
-							<td>
-								<a href="/source/{source.id}" class="link link-hover">
-									{source.name || 'Unknown'}
-								</a>
-							</td>
-							<td>
-								<a href="/country/{source.country}" class="link link-hover">
-									{source.country}
-								</a>
-							</td>
-							<td class="text-sm opacity-70">{formatSector(source.subsector)}</td>
-							<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
-						</tr>
-					{:else}
+			<div class="overflow-x-auto">
+				<table class="table table-sm">
+					<thead>
 						<tr>
-							<td colspan="4" class="text-center text-muted">No sources found</td>
+							<th>Source Name</th>
+							<th>Country</th>
+							<th>Subsector</th>
+							<th class="text-right">
+								<button type="button" class="link link-hover" onclick={toggleSort}>
+									Emissions {sortOrder === 'desc' ? '↓' : '↑'}
+								</button>
+							</th>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{#each paginatedSources as source}
+							<tr class="hover">
+								<td>
+									<a href="/source/{source.id}" class="link link-hover">
+										{source.name || 'Unknown'}
+									</a>
+								</td>
+								<td>
+									<a href="/country/{source.country}" class="link link-hover">
+										{source.country}
+									</a>
+								</td>
+								<td class="text-sm opacity-70">{formatSector(source.subsector)}</td>
+								<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
+							</tr>
+						{:else}
+							<tr>
+								<td colspan="4" class="text-center text-muted">No sources found</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 		</div>
-	</div>
-</div>
+	{/snippet}
+</Card>

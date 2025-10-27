@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Plot, LineY, normalizeY, AxisX, AxisY } from 'svelteplot';
+	import { Plot, LineY, AxisX, AxisY } from 'svelteplot';
 	import { ct } from '$lib/api';
-	import CountrySearch from './ui/CountrySearch.svelte';
 
 	interface Props {
 		country: string;

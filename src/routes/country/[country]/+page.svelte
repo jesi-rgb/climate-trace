@@ -8,7 +8,7 @@
 	import { getTopSources } from '../../api/source.remote';
 	import {
 		Lightning,
-		Users,
+		UsersThree,
 		Globe,
 		XCircle,
 		Trophy,
@@ -18,6 +18,11 @@
 		MapPin
 	} from 'phosphor-svelte';
 	import { Plot, LineY, Dot, Pointer, Text } from 'svelteplot';
+	import Figure from '$lib/components/type/Figure.svelte';
+	import EmissionsBarChart from '$lib/components/charts/EmissionsBarChart.svelte';
+	import Heading from '$lib/components/type/Heading.svelte';
+	import { Card } from '$lib/components/ui';
+	import Body from '$lib/components/type/Body.svelte';
 
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
@@ -87,7 +92,7 @@
 		<div class="alert alert-error max-w-md">
 			<XCircle size={24} weight="bold" />
 			<div>
-				<h3 class="font-bold">Country not found</h3>
+				<Heading size="h3">Country not found</Heading>
 				<a href="/" class="link link-hover">Return to home</a>
 			</div>
 		</div>
@@ -104,7 +109,7 @@
 			</div>
 
 			<div class="flex items-center gap-4">
-				<h1 class="text-4xl font-bold">{data.name}</h1>
+				<Heading size="h1">{data.name}</Heading>
 				{#if data.subregion}
 					<div class="badge badge-primary badge-lg">{data.subregion}</div>
 				{/if}
@@ -114,50 +119,43 @@
 			{/if}
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 join-horizontal mb-4">
-			<div class="card bg-gradient-to-br from-error/10 to-error/5 border border-error/20">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Lightning size={20} weight="fill" class="text-error" />
-						<h2 class="card-title text-sm font-medium opacity-70">Emissions Per Capita</h2>
-					</div>
-					<p class="text-4xl font-bold mb-1">{fN(data.emissionsPerCapita)}</p>
-					<p class="text-sm opacity-60">tonnes CO₂e per person</p>
-				</div>
-			</div>
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-2 join-horizontal mb-2">
+			<Figure
+				icon={Lightning}
+				title="Emissions Per Capita"
+				value={fN(data.emissionsPerCapita)}
+				subtitle="tonnes CO₂e per person"
+				color="error"
+			/>
 
-			<div class="card bg-gradient-to-br from-info/10 to-info/5 border border-info/20">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Users size={20} weight="fill" class="text-info" />
-						<h2 class="card-title text-sm font-medium opacity-70">Population</h2>
-					</div>
-					<p class="text-4xl font-bold mb-1">{fN(data.population)}</p>
-					<p class="text-sm opacity-60">people</p>
-				</div>
-			</div>
+			<Figure
+				icon={UsersThree}
+				title="Population"
+				value={fN(data.population)}
+				subtitle="people"
+				color="info"
+			/>
 
-			<div class="card bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-2">
-						<Globe size={20} weight="fill" class="text-warning" />
-						<h2 class="card-title text-sm font-medium opacity-70">Total Emissions</h2>
-					</div>
-					<p class="text-4xl font-bold mb-1">{fN(data.totalEmissions)}</p>
-					<p class="text-sm opacity-60">tonnes CO₂e</p>
-				</div>
-			</div>
+			<Figure
+				icon={Globe}
+				title="Total Emissions"
+				value={fN(data.totalEmissions)}
+				subtitle="tonnes CO₂e"
+				color="warning"
+			/>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8">
 			{#if rankingsContext.length > 0}
-				<div class="card bg-base-200 rounded-sm border border-base-300">
-					<div class="card-body py-2 px-0">
-						<div class="flex items-center gap-2 ml-3">
-							<Trophy size={14} weight="fill" class="text-primary" />
-							<h2 class="card-title text-lg">Global Rankings</h2>
+				<Card variant="gradient">
+					{#snippet title()}
+						<div class="flex items-center gap-2">
+							<Trophy size={18} weight="fill" class="text-primary" />
+							<Heading size="h3">Global Rankings</Heading>
 						</div>
+					{/snippet}
 
+					{#snippet content()}
 						<div class="overflow-x-auto">
 							<table class="table table-sm">
 								<thead>
@@ -190,147 +188,155 @@
 								</tbody>
 							</table>
 						</div>
+					{/snippet}
 
-						<div class="text-xs opacity-60 mt-2 ml-3">
+					{#snippet footnote()}
+						<Body size="12" class="mt-2 text-muted">
 							Showing ±3 countries around {data.name}'s position
-						</div>
-					</div>
-				</div>
+						</Body>
+					{/snippet}
+				</Card>
 			{/if}
 
 			{#if topSectors.length > 0}
-				<div class="card bg-base-200 border border-base-300">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-4">
+				<Card>
+					{#snippet title()}
+						<div class="flex items-center gap-2">
 							<Factory size={24} weight="fill" class="text-secondary" />
-							<h2 class="card-title">Top Emission Sectors</h2>
+							<Heading size="h3">Top Emission Sectors</Heading>
 						</div>
+					{/snippet}
 
-						<div class="space-y-3">
-							{#each topSectors as sector}
-								<div>
-									<div class="flex justify-between items-center mb-1">
-										<span class="text-sm font-medium">{formatSector(sector.sector)}</span>
-										<span class="text-sm font-bold tabular-nums"
-											>{fN(sector.emissionsQuantity)}</span
-										>
-									</div>
-									<div class="flex items-center gap-2">
-										<progress
-											class="progress progress-secondary w-full"
-											value={sector.percentage}
-											max="100"
-										></progress>
-										<span class="text-xs opacity-60 tabular-nums min-w-[3rem]"
-											>{sector.percentage.toFixed(1)}%</span
-										>
-									</div>
-								</div>
-							{/each}
-						</div>
-					</div>
-				</div>
-			{/if}
-		</div>
-
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-			{#if emissionsTimeseries.length > 0}
-				<div class="card bg-base-200 border border-base-300">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-4">
-							<ChartLine size={24} weight="bold" class="text-accent" />
-							<h2 class="card-title">Emissions Timeline</h2>
-						</div>
-
-						<Plot
-							inset={15}
-							height={250}
-							y={{
-								grid: true,
-								nice: true,
-								tickFormat(d) {
-									return fN(d.valueOf() as number);
-								}
-							}}
-							x={{
-								grid: true,
-								nice: true,
-								ticks: years,
-								tickFormat(d) {
-									return d.valueOf() as number;
-								}
-							}}
-						>
-							<LineY
-								data={emissionsTimeseries}
-								x="year"
-								y="emissions"
-								curve="monotone-x"
-								stroke="var(--color-primary)"
-								strokeDasharray="2"
-								strokeWidth={2}
+					{#snippet content()}
+						<div class="px-4">
+							<EmissionsBarChart
+								data={topSectors.map((s) => ({
+									sector: formatSector(s.sector),
+									emissions: s.emissionsQuantity
+								}))}
+								formatValue={fN}
 							/>
+						</div>
+					{/snippet}
 
-							<Dot data={emissionsTimeseries} x="year" y="emissions" fill="var(--color-primary)" />
+					{#snippet footnote()}
+						<Body size="12" class="mt-2 text-muted">Emissions in tonnes CO₂e</Body>
+					{/snippet}
+				</Card>
+			{/if}
 
-							<Pointer data={emissionsTimeseries} x="year">
-								{#snippet children({ data })}
-									<Text
-										{data}
-										fill="currentColor"
-										stroke="var(--color-base-200)"
-										strokeWidth={4}
-										x="year"
-										class="font-mono"
-										y="emissions"
-										text={(d) => `${fN(d.emissions, 4, 'compact')} t`}
-										fontSize={12}
-										lineAnchor="bottom"
-										fontWeight="bold"
-										dy={-10}
-									/>
-								{/snippet}
-							</Pointer>
-						</Plot>
+			{#if emissionsTimeseries.length > 0}
+				<Card>
+					{#snippet title()}
+						<div class="flex items-center gap-2">
+							<ChartLine size={24} weight="bold" class="text-accent" />
+							<Heading size="h3">Emissions Timeline</Heading>
+						</div>
+					{/snippet}
 
-						<div class="text-xs opacity-60 mt-2">Emissions in tonnes CO₂e</div>
-					</div>
-				</div>
+					{#snippet content()}
+						<div class="px-4">
+							<Plot
+								inset={15}
+								height={250}
+								y={{
+									grid: true,
+									nice: true,
+									tickFormat(d) {
+										return fN(d.valueOf() as number);
+									}
+								}}
+								x={{
+									grid: true,
+									nice: true,
+									ticks: years,
+									tickFormat(d) {
+										return d.valueOf() as number;
+									}
+								}}
+							>
+								<LineY
+									data={emissionsTimeseries}
+									x="year"
+									y="emissions"
+									curve="monotone-x"
+									stroke="var(--color-primary)"
+									strokeDasharray="2"
+									strokeWidth={2}
+								/>
+
+								<Dot
+									data={emissionsTimeseries}
+									x="year"
+									y="emissions"
+									fill="var(--color-primary)"
+								/>
+
+								<Pointer data={emissionsTimeseries} x="year">
+									{#snippet children({ data })}
+										<Text
+											{data}
+											fill="currentColor"
+											stroke="var(--color-base-200)"
+											strokeWidth={4}
+											x="year"
+											class="font-mono"
+											y="emissions"
+											text={(d) => `${fN(d.emissions, 4, 'compact')} t`}
+											fontSize={12}
+											lineAnchor="bottom"
+											fontWeight="bold"
+											dy={-10}
+										/>
+									{/snippet}
+								</Pointer>
+							</Plot>
+						</div>
+					{/snippet}
+
+					{#snippet footnote()}
+						<Body size="12" class="mt-2 text-muted">Emissions in tonnes CO₂e</Body>
+					{/snippet}
+				</Card>
 			{/if}
 
 			{#if cities && cities.length > 0}
-				<div class="card bg-base-200 border border-base-300">
-					<div class="card-body">
-						<div class="flex items-center gap-2 mb-4">
+				<Card>
+					{#snippet title()}
+						<div class="flex items-center gap-2">
 							<Buildings size={24} weight="fill" class="text-info" />
-							<h2 class="card-title">Major Cities</h2>
+							<Heading size="h3">Major Cities</Heading>
 						</div>
+					{/snippet}
 
-						<div class="space-y-2">
+					{#snippet content()}
+						<div class="px-4 py-2 space-y-2">
 							{#each cities as city}
 								<div class="flex items-center gap-2">
 									<MapPin size={16} class="opacity-60" />
 									<span class="text-sm">{city.name}</span>
 								</div>
 							{/each}
-						</div>
 
-						<a href="/cities?country={country}" class="btn btn-sm btn-outline mt-4"
-							>View All Cities</a
-						>
-					</div>
-				</div>
+							<a href="/cities?country={country}" class="btn btn-sm btn-outline mt-4"
+								>View All Cities</a
+							>
+						</div>
+					{/snippet}
+				</Card>
 			{/if}
 		</div>
 
 		{#if countrySources.length > 0}
-			<div class="card bg-base-200 border border-base-300">
-				<div class="card-body">
-					<div class="flex items-center gap-2 mb-4">
+			<Card>
+				{#snippet title()}
+					<div class="flex items-center gap-2">
 						<Factory size={24} weight="bold" class="text-warning" />
-						<h2 class="card-title">Top Emission Sources in {data.name}</h2>
+						<Heading size="h2">Top Emission Sources in {data.name}</Heading>
 					</div>
+				{/snippet}
 
+				{#snippet content()}
 					<div class="overflow-x-auto">
 						<table class="table table-sm">
 							<thead>
@@ -353,8 +359,8 @@
 							</tbody>
 						</table>
 					</div>
-				</div>
-			</div>
+				{/snippet}
+			</Card>
 		{/if}
 	</div>
 {/if}

@@ -101,7 +101,16 @@
 		return sources;
 	});
 
-	let totalCount = $derived(MAX_DISPLAYABLE_ITEMS);
+	let totalCount = $derived.by(() => {
+		if (!chunkData || chunkData === null) return 0;
+
+		const chunkSize = chunkData.length;
+		if (chunkSize < FETCH_CHUNK_SIZE) {
+			return chunkOffset + chunkSize;
+		}
+
+		return MAX_DISPLAYABLE_ITEMS;
+	});
 
 	function toggleSubsector(subsector: string) {
 		if (selectedSubsectors.includes(subsector)) {
@@ -300,10 +309,11 @@
 							{/if}
 						</div>
 						<ul class="menu menu-sm bg-base-100 rounded-box w-full">
-							{#each Object.entries(sectorHierarchy) as [sector, subsectors]}
+							{#each Object.entries(sectorHierarchy) as [sector, subsectors], i}
 								{@const SectorIcon = sectorIcons[sector] || Factory}
+								{@const open = i === 0}
 								<li>
-									<details open>
+									<details {open}>
 										<summary class="font-medium">
 											<SectorIcon size={18} weight="fill" class="inline mr-1" />
 											{formatSector(sector)}

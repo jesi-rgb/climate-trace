@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { searchOwners } from '../api/owners.remote';
+	import { Card } from '$lib/components/ui';
 
 	const owners = await searchOwners({ limit: 100 });
 </script>
@@ -17,16 +18,21 @@
 	{:else}
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each owners as owner}
-				<div class="card bg-base-200">
-					<div class="card-body">
+				<Card>
+					{#snippet title()}
 						<h2 class="card-title">{owner.ownerName}</h2>
-						{#if owner.country}
-							<p class="text-sm">
-								Country: <a href="/country/{owner.country}" class="link">{owner.country}</a>
-							</p>
-						{/if}
-					</div>
-				</div>
+					{/snippet}
+
+					{#snippet content()}
+						<div class="px-4 pb-4">
+							{#if owner.country}
+								<p class="text-sm">
+									Country: <a href="/country/{owner.country}" class="link">{owner.country}</a>
+								</p>
+							{/if}
+						</div>
+					{/snippet}
+				</Card>
 			{/each}
 		</div>
 	{/if}

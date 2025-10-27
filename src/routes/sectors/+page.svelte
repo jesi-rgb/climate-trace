@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Heading from '$lib/components/type/Heading.svelte';
 	import { formatSector } from '$lib/utils';
 	import { getSectors } from '../api/sector.remote';
 	import {
@@ -31,7 +32,7 @@
 </script>
 
 <div class="px-section-x py-section-y">
-	<h1 class="mb-6 text-3xl font-bold">Emission Sectors</h1>
+	<Heading size="h1">Emission Sectors</Heading>
 
 	{#if !sectors}
 		<div class="flex min-h-[60vh] items-center justify-center">
@@ -41,21 +42,21 @@
 			</div>
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+		<div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
 			{#each sectors as sector}
 				{@const config = sectorConfig[sector] || {
 					icon: Factory
 				}}
 				<a
 					href="/sector/{sector}"
-					class="card bg-base-200 transition-all group hover:bg-base-300 overflow-hidden relative min-h-[180px]"
+					class="card bg-base-200 px-section-x flex justify-center transition-all group hover:bg-base-300 overflow-hidden relative min-h-[180px]"
 				>
 					<div
 						class="absolute inset-0 opacity-30 pointer-events-none"
 						style="background: linear-gradient({config.gradient}, {config.color}, transparent);"
 					></div>
-					<div class="card-body relative z-10">
-						<h2 class="card-title text-xl">{formatSector(sector)}</h2>
+					<div class="z-10">
+						<Heading size="h1" style="color: {config.color};">{formatSector(sector)}</Heading>
 					</div>
 					<config.icon
 						size={180}

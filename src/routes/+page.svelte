@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ct } from '$lib/api';
 	import { fN, formatSector } from '$lib/utils';
-	import SectorData from '$lib/components/SectorData.svelte';
+	import SectorData from '$lib/components/sector/SectorData.svelte';
 
 	let topSources = $state<any[]>([]);
 	let countryRankings = $state<any[]>([]);

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { searchCities } from '../api/cities.remote';
+	import { Card } from '$lib/components/ui';
 
 	let searchQuery = $state('');
 	let cities = $state<Awaited<ReturnType<typeof searchCities>>>([]);
@@ -55,17 +56,22 @@
 	{:else if cities.length > 0}
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{#each cities as city}
-				<div class="card bg-base-200">
-					<div class="card-body">
+				<Card>
+					{#snippet title()}
 						<h2 class="card-title">{city.name}</h2>
-						<p class="text-sm">
-							Country: <a href="/country/{city.country}" class="link">{city.country}</a>
-						</p>
-						{#if city.population}
-							<p class="text-sm">Population: {city.population.toLocaleString()}</p>
-						{/if}
-					</div>
-				</div>
+					{/snippet}
+
+					{#snippet content()}
+						<div class="px-4 pb-4 space-y-1">
+							<p class="text-sm">
+								Country: <a href="/country/{city.country}" class="link">{city.country}</a>
+							</p>
+							{#if city.population}
+								<p class="text-sm">Population: {city.population.toLocaleString()}</p>
+							{/if}
+						</div>
+					{/snippet}
+				</Card>
 			{/each}
 		</div>
 	{:else if searchQuery.trim()}

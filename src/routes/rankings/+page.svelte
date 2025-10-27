@@ -4,7 +4,9 @@
 	import { fN } from '$lib/utils';
 	import { getAllRankings } from '../api/rankings.remote';
 	import { Pagination } from '$lib/components/ui';
-	import TrendingLineRanking from '$lib/components/TrendingLineRanking.svelte';
+	import TrendingLineRanking from '$lib/components/charts/TrendingLineRanking.svelte';
+	import Body from '$lib/components/type/Body.svelte';
+	import Number from '$lib/components/type/Number.svelte';
 
 	const ITEMS_PER_PAGE = 20;
 
@@ -61,13 +63,23 @@
 						>
 							<td>{startIndex + i + 1}</td>
 							<td>
-								{ranking.name}
+								<Body size="16">
+									{ranking.name}
+								</Body>
 							</td>
 							<td class="max-w-[0px]">
 								<TrendingLineRanking country={ranking.country} />
 							</td>
-							<td class="tabular-nums text-right">{fN(ranking.emissionsQuantity)}</td>
-							<td class="tabular-nums text-right">{fN(ranking.emissionsPerCapita)}</td>
+							<td>
+								<Body as="div" size="16" class="text-right w-full tabular-nums">
+									{fN(ranking.emissionsQuantity)}
+								</Body>
+							</td>
+							<td class="tabular-nums text-right">
+								<Body as="div" size="16" class="text-right w-full tabular-nums">
+									{fN(ranking.emissionsPerCapita)}
+								</Body>
+							</td>
 						</tr>
 					{/each}
 				</tbody>
