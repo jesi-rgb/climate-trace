@@ -4,25 +4,14 @@
 	import { getCountryData } from '../../api/country.remote';
 	import { getAllRankings } from '../../api/rankings.remote';
 	import { getAggregatedEmissions } from '../../api/emissions.remote';
-	import { searchCities } from '../../api/cities.remote';
-	import { getTopSources } from '../../api/source.remote';
-	import {
-		Lightning,
-		UsersThree,
-		Globe,
-		XCircle,
-		Trophy,
-		Factory,
-		Buildings,
-		ChartLine,
-		MapPin
-	} from 'phosphor-svelte';
+	import { UsersThree, Globe, XCircle, Trophy, Factory, ChartLine, Flame } from 'phosphor-svelte';
 	import { Plot, LineY, Dot, Pointer, Text } from 'svelteplot';
 	import Figure from '$lib/components/type/Figure.svelte';
 	import EmissionsBarChart from '$lib/components/charts/EmissionsBarChart.svelte';
 	import Heading from '$lib/components/type/Heading.svelte';
 	import { Card } from '$lib/components/ui';
 	import Body from '$lib/components/type/Body.svelte';
+	import GeoSources from '$lib/components/country/GeoSources.svelte';
 
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
@@ -40,8 +29,6 @@
 	);
 
 	let countryEmissions = $derived(await getAggregatedEmissions({ gadmId: country, year: 2024 }));
-	let cities = $derived(await searchCities({ country, limit: 5 }));
-	let topSources = $derived(await getTopSources({ limit: 10 }));
 
 	let countryRankingIndex = $derived(
 		rankings?.rankings.findIndex((r) => r.country === country) ?? -1
@@ -72,11 +59,6 @@
 		return countryEmissions.sectors.summaries
 			.sort((a, b) => b.emissionsQuantity - a.emissionsQuantity)
 			.slice(0, 5);
-	});
-
-	let countrySources = $derived.by(() => {
-		if (!topSources) return [];
-		return topSources.filter((s) => s.country === country).slice(0, 5);
 	});
 </script>
 
@@ -121,7 +103,7 @@
 
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-2 join-horizontal mb-2">
 			<Figure
-				icon={Lightning}
+				icon={Flame}
 				title="Emissions Per Capita"
 				value={fN(data.emissionsPerCapita)}
 				subtitle="tonnes CO₂e per person"
@@ -202,7 +184,7 @@
 				<Card>
 					{#snippet title()}
 						<div class="flex items-center gap-2">
-							<Factory size={24} weight="fill" class="text-secondary" />
+							<Factory size={24} weight="fill" class="text-primary" />
 							<Heading size="h3">Top Emission Sectors</Heading>
 						</div>
 					{/snippet}
@@ -229,7 +211,7 @@
 				<Card>
 					{#snippet title()}
 						<div class="flex items-center gap-2">
-							<ChartLine size={24} weight="bold" class="text-accent" />
+							<ChartLine size={24} weight="bold" class="text-primary" />
 							<Heading size="h3">Emissions Timeline</Heading>
 						</div>
 					{/snippet}
@@ -238,7 +220,6 @@
 						<div class="px-4">
 							<Plot
 								inset={15}
-								height={250}
 								y={{
 									grid: true,
 									nice: true,
@@ -299,68 +280,7 @@
 					{/snippet}
 				</Card>
 			{/if}
-
-			{#if cities && cities.length > 0}
-				<Card>
-					{#snippet title()}
-						<div class="flex items-center gap-2">
-							<Buildings size={24} weight="fill" class="text-info" />
-							<Heading size="h3">Major Cities</Heading>
-						</div>
-					{/snippet}
-
-					{#snippet content()}
-						<div class="px-4 py-2 space-y-2">
-							{#each cities as city}
-								<div class="flex items-center gap-2">
-									<MapPin size={16} class="opacity-60" />
-									<span class="text-sm">{city.name}</span>
-								</div>
-							{/each}
-
-							<a href="/cities?country={country}" class="btn btn-sm btn-outline mt-4"
-								>View All Cities</a
-							>
-						</div>
-					{/snippet}
-				</Card>
-			{/if}
+			<GeoSources countryCode={country} countryName={data.name} />
 		</div>
-
-		{#if countrySources.length > 0}
-			<Card>
-				{#snippet title()}
-					<div class="flex items-center gap-2">
-						<Factory size={24} weight="bold" class="text-warning" />
-						<Heading size="h2">Top Emission Sources in {data.name}</Heading>
-					</div>
-				{/snippet}
-
-				{#snippet content()}
-					<div class="overflow-x-auto">
-						<table class="table table-sm">
-							<thead>
-								<tr>
-									<th>Source Name</th>
-									<th>Sector</th>
-									<th class="text-right">Emissions</th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each countrySources as source}
-									<tr class="hover">
-										<td>
-											<a href="/source/{source.id}" class="link link-hover">{source.name}</a>
-										</td>
-										<td class="text-sm opacity-70">{formatSector(source.sector)}</td>
-										<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-				{/snippet}
-			</Card>
-		{/if}
 	</div>
 {/if}

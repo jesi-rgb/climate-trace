@@ -106,3 +106,25 @@
 }
 
 @custom-variant dark (&:where([data-theme=barelycookie], [data-theme=barelycookie] *));
+
+.maplibregl-popup-content {
+	font-family: var(--font-sans);
+	padding: 0 !important;
+	box-shadow: none !important;
+	border-radius: 1rem !important;
+	border: 0px !important;
+
+}
+
+.maplibregl-popup-tip {
+	display: none !important;
+}
+
+.maplibregl-popup-close-button {
+	display: none !important;
+}
+
+/* Optional: remove default background if you want full control */
+.custom-popup .maplibregl-popup-content {
+	background: transparent !important;
+}

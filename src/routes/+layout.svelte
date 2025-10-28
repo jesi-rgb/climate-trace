@@ -4,6 +4,7 @@
 	import Header from '$lib/components/ui/Header.svelte';
 	import Footer from '$lib/components/ui/Footer.svelte';
 	import { fade } from 'svelte/transition';
+	import { Tooltip } from 'bits-ui';
 
 	let { children } = $props();
 </script>
@@ -13,19 +14,21 @@
 </svelte:head>
 
 <div class="h-screen flex flex-col relative">
-	{#if $effect.pending()}
-		<div
-			transition:fade={{ duration: 350 }}
-			class="loading-scrim absolute top-0 left-0 w-screen h-screen
-			bg-black/5 z-20 pointer-events-none"
-		></div>
-	{/if}
+	<Tooltip.Provider>
+		{#if $effect.pending()}
+			<div
+				transition:fade={{ duration: 350 }}
+				class="loading-scrim absolute top-0 left-0 w-screen h-screen
+				bg-black/5 z-20 pointer-events-none"
+			></div>
+		{/if}
 
-	<Header />
-	<main class="flex-1 overflow-y-scroll selection:bg-primary selection:text-primary-content">
-		{@render children?.()}
-	</main>
-	<Footer />
+		<Header />
+		<main class="flex-1 overflow-y-scroll selection:bg-primary selection:text-primary-content">
+			{@render children?.()}
+		</main>
+		<Footer />
+	</Tooltip.Provider>
 </div>
 
 <style>

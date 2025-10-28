@@ -5,34 +5,12 @@
 	import { getSectors, getSubsectors, getSubsectorDetails } from '../api/sector.remote';
 	import { fN, formatSector } from '$lib/utils';
 	import { Pagination } from '$lib/components/ui';
-	import {
-		Factory,
-		Tree,
-		Lightning,
-		Buildings,
-		CraneTower,
-		GasCan,
-		AirplaneTakeoff,
-		Shovel,
-		Trash
-	} from 'phosphor-svelte';
+	import Sidebar from '$lib/components/sources/Sidebar.svelte';
 	import { onMount } from 'svelte';
 	import type { SubSector } from '$lib/api';
 
 	const ITEMS_PER_PAGE = 20;
 	const FETCH_CHUNK_SIZE = 10000;
-
-	const sectorIcons: Record<string, any> = {
-		'fossil-fuel-operations': GasCan,
-		'forestry-and-land-use': Tree,
-		manufacturing: CraneTower,
-		transportation: AirplaneTakeoff,
-		power: Lightning,
-		agriculture: Shovel,
-		waste: Trash,
-		buildings: Buildings
-	};
-
 	const MAX_DISPLAYABLE_ITEMS = 10000;
 
 	let searchTerm = $state('');
@@ -46,12 +24,16 @@
 	let currentPage = $state(parseInt(page.url.searchParams.get('page') || '1'));
 
 	let sectorHierarchy: Record<string, string[]> = $state({});
+	let sidebarLoading = $state(true);
 
 	onMount(async () => {
 		let sectors = await getSectors();
 		let subsectors = await getSubsectors();
 
-		if (!sectors || !subsectors) return {};
+		if (!sectors || !subsectors) {
+			sidebarLoading = false;
+			return;
+		}
 
 		const subsectorDetails: SubSector[] = await Promise.all(
 			subsectors.map(async (subsector) => {
@@ -67,6 +49,7 @@
 			}
 			sectorHierarchy[sector].push(subsector.name);
 		}
+		sidebarLoading = false;
 	});
 
 	let chunkOffset = $derived(
@@ -81,13 +64,6 @@
 			gas: selectedGas
 		})
 	);
-	// $inspect({
-	// 	limit: FETCH_CHUNK_SIZE,
-	// 	offset: chunkOffset,
-	// 	subsectors: selectedSubsectors.length > 0 ? selectedSubsectors : undefined,
-	// 	sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
-	// 	gas: selectedGas
-	// });
 
 	let paginatedSources = $derived.by(() => {
 		if (!chunkData || chunkData === null) return [];
@@ -277,69 +253,12 @@
 	</div>
 	<div class="drawer-side h-full">
 		<label for="sources-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-		<div class="border-r border-subtle/40 h-full w-80 flex flex-col">
-			<div class="px-section-x py-section-y overflow-y-auto flex-1">
-				<h2 class="text-lg font-semibold mb-4">Filters</h2>
-
-				<div class="space-y-6">
-					<div>
-						<label class="flex-col">
-							<span class="label-text font-medium">Search</span>
-							<input
-								type="text"
-								bind:value={searchTerm}
-								placeholder="Search by name..."
-								class="input input-bordered input-sm w-full"
-							/>
-						</label>
-						<p class="text-xs opacity-60 mt-1">Searches within current page results</p>
-					</div>
-
-					<div>
-						<div class="flex items-center justify-between mb-2">
-							<span class="label-text font-medium">Sectors & Subsectors</span>
-							{#if selectedSubsectors.length > 0}
-								<button
-									type="button"
-									class="btn btn-ghost btn-xs"
-									onclick={() => (selectedSubsectors = [])}
-								>
-									Clear
-								</button>
-							{/if}
-						</div>
-						<ul class="menu menu-sm bg-base-100 rounded-box w-full">
-							{#each Object.entries(sectorHierarchy) as [sector, subsectors], i}
-								{@const SectorIcon = sectorIcons[sector] || Factory}
-								{@const open = i === 0}
-								<li>
-									<details {open}>
-										<summary class="font-medium">
-											<SectorIcon size={18} weight="fill" class="inline mr-1" />
-											{formatSector(sector)}
-										</summary>
-										<ul>
-											{#each subsectors as subsector}
-												<li>
-													<label class="cursor-pointer justify-start gap-2 py-1 flex">
-														<input
-															type="checkbox"
-															class="checkbox checkbox-xs"
-															checked={selectedSubsectors.includes(subsector)}
-															onchange={() => toggleSubsector(subsector)}
-														/>
-														<span class="text-xs text-muted">{formatSector(subsector)}</span>
-													</label>
-												</li>
-											{/each}
-										</ul>
-									</details>
-								</li>
-							{/each}
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
+		<Sidebar
+			bind:searchTerm
+			bind:selectedSubsectors
+			{sectorHierarchy}
+			loading={sidebarLoading}
+			onToggleSubsector={toggleSubsector}
+		/>
 	</div>
 </div>

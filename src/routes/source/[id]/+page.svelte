@@ -42,9 +42,10 @@
 		ChartBar
 	};
 	import { Plot, LineY, Dot, formatMonth } from 'svelteplot';
-	import { Pagination, Card } from '$lib/components/ui';
-	import CountrySearch from '$lib/components/ui/CountrySearch.svelte';
+	import { Pagination, Card, Tooltip } from '$lib/components/ui';
 	import Figure from '$lib/components/type/Figure.svelte';
+	import { ct } from '$lib/api';
+	import Heading from '$lib/components/type/Heading.svelte';
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -65,7 +66,7 @@
 	);
 
 	let source = $derived(yearlyData[yearlyData.length - 1]);
-	console.log(source);
+	let countrySourceDetails = $derived(await ct('getCountryDetails', { country: source.country }));
 
 	let currentPage = $state(1);
 
@@ -153,14 +154,21 @@
 				color="warning"
 			/>
 
-			<Figure
-				icon={Globe}
-				title="Country"
-				value={source.country}
-				subtitle="location"
-				color="info"
-				href="/country/{source.country}"
-			/>
+			<Tooltip>
+				{#snippet trigger()}
+					<Figure
+						icon={Globe}
+						title="Country"
+						value={source.country}
+						subtitle="location"
+						color="info"
+						href="/country/{source.country}"
+					/>
+				{/snippet}
+				<Heading>
+					{countrySourceDetails.name}
+				</Heading>
+			</Tooltip>
 
 			<Figure
 				icon={Factory}

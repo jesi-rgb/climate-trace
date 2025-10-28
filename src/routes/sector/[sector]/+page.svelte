@@ -59,7 +59,7 @@
 			</div>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 join-horizontal mb-4">
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-2">
 			<Figure
 				icon={Lightning}
 				title="Total Emissions"
@@ -75,9 +75,7 @@
 				subtitle="categories"
 				color="info"
 			/>
-		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 			{#if topSubsectors.length > 0}
 				<Card>
 					{#snippet title()}
@@ -113,10 +111,10 @@
 					{/snippet}
 				</Card>
 			{/if}
-		</div>
 
-		{#if sources && sources.length > 0}
-			<EmissionSources {sources} subsectors={subsectorNames} />
-		{/if}
+			{#if sources && sources.length > 0}
+				<EmissionSources {sources} subsectors={subsectorNames} />
+			{/if}
+		</div>
 	</div>
 {/if}

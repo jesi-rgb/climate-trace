@@ -49,7 +49,6 @@
 		--gradient-to: color-mix(in oklch, var(--color-{color}), transparent {100 - gradientTo}%);
 		background-image: linear-gradient(to bottom right, var(--gradient-from), var(--gradient-to));
 		border-color: color-mix(in oklch, var(--color-{color}), transparent {100 - borderOpacity}%);
-
 	"
 >
 	<div class="card-body">
