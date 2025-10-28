@@ -21,7 +21,7 @@
     {
       "id": "background",
       "type": "background",
-      "paint": {"background-color": "hsl(206, 27%, 97%)"}
+      "paint": {"background-color": "#F9F9F8"}
     },
     {
       "id": "landcover-glacier",
@@ -52,9 +52,9 @@
           ["linear"],
           ["zoom"],
           12,
-          "hsla(206,28%,89%,0.4)",
+          "hsla(190,15%,95%,0.4)",
           16,
-          "hsla(206,28%,89%,0.2)"
+          "hsla(190,15%,95%,0.2)"
         ]
       }
     },
@@ -71,9 +71,9 @@
           ["linear"],
           ["zoom"],
           8,
-          "hsla(206,28%,89%,0.4)",
+          "hsla(190,15%,95%,0.4)",
           10,
-          "hsla(206,28%,89%,0.0)"
+          "hsla(190,15%,95%,0.0)"
         ]
       }
     },
@@ -206,7 +206,7 @@
       ],
       "layout": {"line-cap": "round"},
       "paint": {
-        "line-color": "hsl(200, 100%, 89%)",
+        "line-color": "#E8EDEF",
         "line-dasharray": [2, 4],
         "line-width": [
           "interpolate",
@@ -407,7 +407,7 @@
       "source": "openmaptiles",
       "source-layer": "landcover",
       "filter": ["==", ["get", "class"], "sand"],
-      "paint": {"fill-color": "hsl(195, 35%, 89%)", "fill-opacity": 1}
+      "paint": {"fill-color": "hsl(190, 12%, 94%)", "fill-opacity": 1}
     },
     {
       "id": "building",
@@ -421,9 +421,9 @@
           ["linear"],
           ["zoom"],
           15.5,
-          "hsl(206, 22%, 88%)",
+          "hsl(190, 10%, 92%)",
           16,
-          "hsl(206, 17%, 82%)"
+          "hsl(190, 8%, 86%)"
         ]
       }
     },
@@ -433,9 +433,9 @@
       "source": "openmaptiles",
       "source-layer": "building",
       "paint": {
-        "fill-color": "hsl(206, 22%, 88%)",
+        "fill-color": "hsl(190, 10%, 92%)",
         "fill-opacity": ["interpolate", ["linear"], ["zoom"], 13, 0, 16, 1],
-        "fill-outline-color": "hsl(206, 17%, 82%)",
+        "fill-outline-color": "hsl(190, 8%, 86%)",
         "fill-translate": [
           "interpolate",
           ["linear"],
@@ -459,7 +459,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-dasharray": [0.5, 0.25],
         "line-width": [
           "interpolate",
@@ -516,7 +516,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-dasharray": [0.5, 0.25],
         "line-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0, 12.5, 1],
         "line-width": [
@@ -553,7 +553,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-dasharray": [0.5, 0.25],
         "line-opacity": 1,
         "line-width": [
@@ -584,7 +584,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-dasharray": [0.5, 0.25],
         "line-opacity": 1,
         "line-width": [
@@ -611,7 +611,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-width": [
           "interpolate",
           ["exponential", 1.2],
@@ -640,7 +640,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-dasharray": [0.5, 0.25],
         "line-width": [
           "interpolate",
@@ -1059,7 +1059,7 @@
         ["match", ["geometry-type"], ["MultiPolygon", "Polygon"], true, false],
         ["==", ["get", "class"], "pier"]
       ],
-      "paint": {"fill-antialias": true, "fill-color": "hsl(206, 27%, 97%)"}
+      "paint": {"fill-antialias": true, "fill-color": "#F5F8F9"}
     },
     {
       "id": "road_pier",
@@ -1079,7 +1079,7 @@
       ],
       "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 27%, 97%)",
+        "line-color": "#F5F8F9",
         "line-width": [
           "interpolate",
           ["exponential", 1.2],
@@ -1105,7 +1105,7 @@
         "fill-antialias": false,
         "fill-color": "hsla(0,0%,89%,0.56)",
         "fill-opacity": 0.9,
-        "fill-outline-color": "hsl(206, 20%, 90%)"
+        "fill-outline-color": "hsl(190, 8%, 93%)"
       }
     },
     {
@@ -1121,7 +1121,7 @@
       ],
       "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -1158,7 +1158,7 @@
       ],
       "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -1194,7 +1194,7 @@
       ],
       "layout": {"line-cap": "round", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0, 12.5, 1],
         "line-width": [
           "interpolate",
@@ -1224,7 +1224,7 @@
       ],
       "layout": {"line-cap": "butt", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -1251,7 +1251,7 @@
       ],
       "layout": {"line-cap": "butt", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": ["interpolate", ["linear"], ["zoom"], 7, 0, 8, 1],
         "line-width": [
           "interpolate",
@@ -1282,7 +1282,7 @@
       ],
       "layout": {"line-cap": "butt", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 1],
         "line-width": [
           "interpolate",
@@ -1313,7 +1313,7 @@
       ],
       "layout": {"line-cap": "butt", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0, 5, 1],
         "line-width": [
           "interpolate",
@@ -1798,7 +1798,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -1834,7 +1834,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -1864,7 +1864,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": 1,
         "line-width": [
           "interpolate",
@@ -1923,7 +1923,7 @@
       ],
       "layout": {"line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-width": [
           "interpolate",
           ["exponential", 1.2],
@@ -1958,7 +1958,7 @@
       ],
       "layout": {"line-cap": "butt", "line-join": "round"},
       "paint": {
-        "line-color": "hsl(206, 20%, 90%)",
+        "line-color": "hsl(190, 8%, 93%)",
         "line-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0, 12.5, 1],
         "line-width": [
           "interpolate",
@@ -1993,7 +1993,7 @@
         ["==", ["get", "class"], "path"]
       ],
       "paint": {
-        "line-color": "hsl(206, 27%, 97%)",
+        "line-color": "#F5F8F9",
         "line-width": [
           "interpolate",
           ["exponential", 1.2],
