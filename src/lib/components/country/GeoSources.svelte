@@ -112,7 +112,7 @@
 <Card>
 	{#snippet title()}
 		<div class="flex items-center gap-2">
-			<Fire size={24} weight="fill" class="text-error" />
+			<Fire size={24} weight="fill" class="text-primary" />
 			<Heading size="h3">Sources Map</Heading>
 		</div>
 	{/snippet}
@@ -141,8 +141,22 @@
 				</Body>
 			</div>
 		{:else}
-			<div class="flex items-center justify-center">
-				<div class="">no data found, error</div>
+			<div class="relative flex items-center justify-center h-full">
+				<div class="absolute inset-0 opacity-10">
+					<Plot
+						inset={2}
+						projection={{
+							type: 'orthographic',
+							rotate: rotate
+						}}
+					>
+						<Sphere stroke="currentColor" />
+						<Graticule strokeOpacity={0.3} stepX={10} stepY={5} />
+					</Plot>
+				</div>
+				<Heading size="h3" class="font-semibold"
+					>Couln't find any emission sources for {countryCode}</Heading
+				>
 			</div>
 		{/if}
 	{/snippet}
