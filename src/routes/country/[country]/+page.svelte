@@ -129,7 +129,7 @@
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8">
 			{#if rankingsContext.length > 0}
-				<Card variant="gradient">
+				<Card>
 					{#snippet title()}
 						<div class="flex items-center gap-2">
 							<Trophy size={18} weight="fill" class="text-primary" />

@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { fN } from '$lib/utils';
+	import Body from '../type/Body.svelte';
+	import Heading from '../type/Heading.svelte';
+	import Card from './Card.svelte';
+	import { MapPin } from 'phosphor-svelte';
 
 	interface Props {
 		name: string;
@@ -9,13 +13,20 @@
 	let { name, emissionsQuantity }: Props = $props();
 </script>
 
-<div
-	class="rounded-lg border border-teal-800 bg-teal-100 p-4 shadow-lg dark:border-gray-800 dark:bg-gray-950"
->
-	<h3 class="mb-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
-		{name}
-	</h3>
-	<p class="text-xs text-gray-600 dark:text-gray-400">
-		{fN(emissionsQuantity)} tCO₂e
-	</p>
-</div>
+<Card variant="gradient" class="min-w-full">
+	{#snippet title()}
+		<div class="flex items-baseline gap-2">
+			<Heading class="truncate" size="eyebrow">{name}</Heading>
+		</div>
+	{/snippet}
+	{#snippet content()}
+		<div class="px-section-x py-section-y">
+			<Body size="24" class="tabular-nums">
+				{fN(emissionsQuantity)}
+			</Body>
+		</div>
+	{/snippet}
+	{#snippet footnote()}
+		<Body size="12" class="text-muted">tonnes CO₂e</Body>
+	{/snippet}
+</Card>
