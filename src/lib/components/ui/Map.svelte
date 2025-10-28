@@ -4,10 +4,12 @@
 	import { mount, onMount } from 'svelte';
 	import MapPopup from './MapPopup.svelte';
 	import { getCssVariableHex } from '$lib/utils';
+	import CountrySearch from './CountrySearch.svelte';
 
 	let map: maplibregl.Map | null = $state(null);
 	let popup: maplibregl.Popup | null = $state(null);
 	let container: HTMLElement | null = $state(null);
+	let isMapReady = $state(false);
 
 	let { data, initialLat = 0, initialLon = 0 } = $props();
 
@@ -98,7 +100,29 @@
 				if (map) map.getCanvas().style.cursor = '';
 				popup?.remove();
 			});
+
+			isMapReady = true;
 		});
+	});
+
+	$effect(() => {
+		console.log(
+			'Effect triggered. isMapReady:',
+			isMapReady,
+			'map:',
+			!!map,
+			'features:',
+			data.features?.length
+		);
+		if (isMapReady && map) {
+			const source = map.getSource('sources') as maplibregl.GeoJSONSource | undefined;
+			if (source) {
+				console.log('✅ Updating map source with', data.features?.length || 0, 'features');
+				source.setData(data);
+			} else {
+				console.log('❌ Source not found');
+			}
+		}
 	});
 </script>
 

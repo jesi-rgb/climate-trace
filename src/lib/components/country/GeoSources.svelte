@@ -1,16 +1,13 @@
 <script lang="ts">
-	import { getCountrySources } from '../../../routes/api/country.remote';
-	import { Fire, Factory, MapPin } from 'phosphor-svelte';
+	import { Fire } from 'phosphor-svelte';
 	import { Card } from '$lib/components/ui';
 	import Heading from '$lib/components/type/Heading.svelte';
 	import Body from '$lib/components/type/Body.svelte';
-	import CountryGlobe from '$lib/components/CountryGlobe.svelte';
-	import { fN, formatSector } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { ct, type SourceDetails } from '$lib/api';
+	import type { SourceDetails } from '$lib/api';
 	import { Graticule, Plot, Sphere } from 'svelteplot';
-	import CountrySearch from '../ui/CountrySearch.svelte';
 	import Map from '../ui/Map.svelte';
+	import { streamCountrySources } from '$lib/api/stream';
 
 	interface Props {
 		countryCode: string;
@@ -23,22 +20,41 @@
 	let loading = $state(true);
 
 	const rotate: [number, number, number] = $state([0, 0, 0]);
-	const interval: NodeJS.Timeout | null = $state(null);
+	let rotationInterval: NodeJS.Timeout | null = null;
 
 	onMount(() => {
-		setInterval(() => {
+		rotationInterval = setInterval(() => {
 			rotate[0] += 1;
 			rotate[1] += 1;
 			rotate[2] += 1;
 		}, 100);
+
+		return () => {
+			if (rotationInterval) clearInterval(rotationInterval);
+		};
 	});
 
 	onMount(async () => {
 		try {
-			console.log('GeoSources: Starting to fetch sources for', countryCode);
-			const fetchedSources = await getCountrySources({ countryCode });
-			sources = fetchedSources || [];
-			interval && clearInterval(interval);
+			console.log('GeoSources: Starting to stream sources for', countryCode);
+
+			const BATCH_SIZE = 10;
+			let batch: SourceDetails[] = [];
+
+			for await (const source of streamCountrySources(countryCode)) {
+				batch.push(source);
+
+				if (batch.length >= BATCH_SIZE) {
+					sources = [...sources, ...batch];
+					batch = [];
+				}
+			}
+
+			if (batch.length > 0) {
+				sources = [...sources, ...batch];
+			}
+
+			if (rotationInterval) clearInterval(rotationInterval);
 		} catch (error) {
 			console.error('GeoSources: Failed to load sources:', error);
 		} finally {
@@ -65,7 +81,6 @@
 			}));
 	});
 
-	$inspect(globeSources);
 	let centerCoords = $derived.by(() => {
 		if (globeSources.length === 0) return { lat: 0, lon: 0 };
 		const avgLat =
@@ -75,14 +90,14 @@
 		return { lat: avgLat, lon: avgLon };
 	});
 
-	function convertToGeoJSON(data) {
+	function convertToGeoJSON(data: typeof globeSources) {
 		return {
 			type: 'FeatureCollection',
 			features: data.map((item) => ({
 				type: 'Feature',
 				geometry: {
 					type: 'Point',
-					coordinates: [item.lon, item.lat] // GeoJSON is [longitude, latitude]
+					coordinates: [item.lon, item.lat]
 				},
 				properties: {
 					id: item.id,
@@ -102,7 +117,7 @@
 		</div>
 	{/snippet}
 	{#snippet content()}
-		{#if loading}
+		{#if loading && globeSources.length === 0}
 			<Plot
 				inset={2}
 				projection={{
