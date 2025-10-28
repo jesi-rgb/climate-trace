@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { fN, formatSector } from '$lib/utils';
+	import { fN } from '$lib/utils';
 	import { getCountryData } from '../../api/country.remote';
 	import { getAllRankings } from '../../api/rankings.remote';
 	import { getAggregatedEmissions } from '../../api/emissions.remote';
-	import { UsersThree, Globe, XCircle, Trophy, Factory, ChartLine, Flame } from 'phosphor-svelte';
-	import { Plot, LineY, Dot, Pointer, Text } from 'svelteplot';
+	import { UsersThree, Globe, XCircle, Flame } from 'phosphor-svelte';
 	import Figure from '$lib/components/type/Figure.svelte';
-	import EmissionsBarChart from '$lib/components/charts/EmissionsBarChart.svelte';
 	import Heading from '$lib/components/type/Heading.svelte';
-	import { Card } from '$lib/components/ui';
-	import Body from '$lib/components/type/Body.svelte';
 	import GeoSources from '$lib/components/country/GeoSources.svelte';
+	import GlobalRankings from '$lib/components/country/GlobalRankings.svelte';
+	import TopEmissionSectors from '$lib/components/country/TopEmissionSectors.svelte';
+	import EmissionsTimeline from '$lib/components/country/EmissionsTimeline.svelte';
 
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
@@ -128,158 +127,9 @@
 		</div>
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8">
-			{#if rankingsContext.length > 0}
-				<Card>
-					{#snippet title()}
-						<div class="flex items-center gap-2">
-							<Trophy size={18} weight="fill" class="text-primary" />
-							<Heading size="h3">Global Rankings</Heading>
-						</div>
-					{/snippet}
-
-					{#snippet content()}
-						<div class="overflow-x-auto">
-							<table class="table table-sm">
-								<thead>
-									<tr>
-										<th class="w-16">Rank</th>
-										<th>Country</th>
-										<th class="text-right">Total</th>
-										<th class="text-right">Per Capita</th>
-									</tr>
-								</thead>
-								<tbody>
-									{#each rankingsContext as ranking}
-										<tr class={ranking.isCurrentCountry ? 'bg-primary/10 font-semibold' : ''}>
-											<td class="text-center">
-												{#if ranking.isCurrentCountry}
-													<div class="badge badge-primary badge-sm">{ranking.rank}</div>
-												{:else}
-													{ranking.rank}
-												{/if}
-											</td>
-											<td class="truncate max-w-[120px]">{ranking.name}</td>
-											<td class="text-right tabular-nums text-xs"
-												>{fN(ranking.emissionsQuantity)}</td
-											>
-											<td class="text-right tabular-nums text-xs"
-												>{fN(ranking.emissionsPerCapita)}</td
-											>
-										</tr>
-									{/each}
-								</tbody>
-							</table>
-						</div>
-					{/snippet}
-
-					{#snippet footnote()}
-						<Body size="12" class="mt-2 text-muted">
-							Showing ±3 countries around {data.name}'s position
-						</Body>
-					{/snippet}
-				</Card>
-			{/if}
-
-			{#if topSectors.length > 0}
-				<Card>
-					{#snippet title()}
-						<div class="flex items-center gap-2">
-							<Factory size={24} weight="fill" class="text-primary" />
-							<Heading size="h3">Top Emission Sectors</Heading>
-						</div>
-					{/snippet}
-
-					{#snippet content()}
-						<div class="px-4">
-							<EmissionsBarChart
-								data={topSectors.map((s) => ({
-									sector: formatSector(s.sector),
-									emissions: s.emissionsQuantity
-								}))}
-								formatValue={fN}
-							/>
-						</div>
-					{/snippet}
-
-					{#snippet footnote()}
-						<Body size="12" class="mt-2 text-muted">Emissions in tonnes CO₂e</Body>
-					{/snippet}
-				</Card>
-			{/if}
-
-			{#if emissionsTimeseries.length > 0}
-				<Card>
-					{#snippet title()}
-						<div class="flex items-center gap-2">
-							<ChartLine size={24} weight="bold" class="text-primary" />
-							<Heading size="h3">Emissions Timeline</Heading>
-						</div>
-					{/snippet}
-
-					{#snippet content()}
-						<div class="px-4">
-							<Plot
-								inset={15}
-								y={{
-									grid: true,
-									nice: true,
-									tickFormat(d) {
-										return fN(d.valueOf() as number);
-									}
-								}}
-								x={{
-									grid: true,
-									nice: true,
-									ticks: years,
-									tickFormat(d) {
-										return d.valueOf() as number;
-									}
-								}}
-							>
-								<LineY
-									data={emissionsTimeseries}
-									x="year"
-									y="emissions"
-									curve="monotone-x"
-									stroke="var(--color-primary)"
-									strokeDasharray="2"
-									strokeWidth={2}
-								/>
-
-								<Dot
-									data={emissionsTimeseries}
-									x="year"
-									y="emissions"
-									fill="var(--color-primary)"
-								/>
-
-								<Pointer data={emissionsTimeseries} x="year">
-									{#snippet children({ data })}
-										<Text
-											{data}
-											fill="currentColor"
-											stroke="var(--color-base-200)"
-											strokeWidth={4}
-											x="year"
-											class="font-mono"
-											y="emissions"
-											text={(d) => `${fN(d.emissions, 4, 'compact')} t`}
-											fontSize={12}
-											lineAnchor="bottom"
-											fontWeight="bold"
-											dy={-10}
-										/>
-									{/snippet}
-								</Pointer>
-							</Plot>
-						</div>
-					{/snippet}
-
-					{#snippet footnote()}
-						<Body size="12" class="mt-2 text-muted">Emissions in tonnes CO₂e</Body>
-					{/snippet}
-				</Card>
-			{/if}
+			<GlobalRankings {rankingsContext} countryName={data.name} />
+			<TopEmissionSectors {topSectors} />
+			<EmissionsTimeline {emissionsTimeseries} {years} />
 			<GeoSources countryCode={country} countryName={data.name} />
 		</div>
 	</div>
