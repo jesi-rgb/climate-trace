@@ -8,6 +8,7 @@
 	import { Graticule, Plot, Sphere } from 'svelteplot';
 	import Map from '../ui/Map.svelte';
 	import { streamCountrySources } from '$lib/api/stream';
+	import SourcesTable from './SourcesTable.svelte';
 
 	interface Props {
 		countryCode: string;
@@ -161,3 +162,7 @@
 		{/if}
 	{/snippet}
 </Card>
+
+{#if globeSources.length > 0}
+	<SourcesTable {globeSources} countryName={countryCode} />
+{/if}

@@ -11,6 +11,7 @@
 	import GlobalRankings from '$lib/components/country/GlobalRankings.svelte';
 	import TopEmissionSectors from '$lib/components/country/TopEmissionSectors.svelte';
 	import EmissionsTimeline from '$lib/components/country/EmissionsTimeline.svelte';
+	import SourcesTable from '$lib/components/country/SourcesTable.svelte';
 
 	let country = $derived(page.params.country!);
 	let data = $derived(await getCountryData(country));
