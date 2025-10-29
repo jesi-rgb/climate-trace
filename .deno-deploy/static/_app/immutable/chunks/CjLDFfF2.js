@@ -1,0 +1,1 @@
+import"./67qOq2eY.js";import{q as t}from"./CG186VWF.js";const o=t("92b49x/getSectorDetails"),c=t("92b49x/getSectorEmissions"),r=t("92b49x/getSectorSources"),S=t("92b49x/getSectors"),g=t("92b49x/getSubsectorDetails"),a=t("92b49x/getSubsectors");export{c as a,r as b,S as c,a as d,g as e,o as g};

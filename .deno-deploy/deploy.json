@@ -1,0 +1,37 @@
+{
+  "headers": [
+    {
+      "source": "/_app/immutable/:file*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, immutable, max-age=31536000"
+        }
+      ]
+    }
+  ],
+  "redirects": [],
+  "rewrites": [],
+  "staticFiles": [
+    {
+      "source": "/_app/:file*",
+      "destination": ".deno-deploy/static/_app/:file*"
+    },
+    {
+      "source": "/.DS_Store",
+      "destination": ".deno-deploy/static/.DS_Store"
+    },
+    {
+      "source": "/freemap-dark.json",
+      "destination": ".deno-deploy/static/freemap-dark.json"
+    },
+    {
+      "source": "/freemap.json",
+      "destination": ".deno-deploy/static/freemap.json"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": ".deno-deploy/static/robots.txt"
+    }
+  ]
+}

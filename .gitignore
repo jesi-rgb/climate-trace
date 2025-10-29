@@ -1,7 +1,5 @@
 node_modules
 
-.deno-deploy
-
 # Output
 .output
 .vercel
