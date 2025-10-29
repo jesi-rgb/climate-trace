@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import { sveltePhosphorOptimize } from "phosphor-svelte/vite";
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit(), devtoolsJson(), sveltePhosphorOptimize()],
+	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 	optimizeDeps: {
 		include: ['bits-ui']
 	},
