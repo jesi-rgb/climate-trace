@@ -8,9 +8,9 @@ const config = {
 	preprocess: vitePreprocess(),
 	kit: {
 		adapter: adapter(),
-		experimental: {
-			remoteFunctions: true
-		},
+		// experimental: {
+		// 	remoteFunctions: true
+		// },
 	},
 	compilerOptions: {
 		experimental: {
