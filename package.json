@@ -14,6 +14,7 @@
 		"lint": "prettier --check ."
 	},
 	"devDependencies": {
+		"@deno/svelte-adapter": "^0.1.0",
 		"@internationalized/date": "^3.8.1",
 		"@lucide/svelte": "^0.544.0",
 		"@sveltejs/adapter-netlify": "^5.2.3",
@@ -30,7 +31,6 @@
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
 		"svelte": "^5.39.5",
-		"svelte-adapter-deno": "^0.9.1",
 		"svelte-check": "^4.3.2",
 		"tailwind-variants": "^3.1.1",
 		"tailwindcss": "^4.1.13",
