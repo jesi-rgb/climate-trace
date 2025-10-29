@@ -11,11 +11,6 @@ const config = {
 		experimental: {
 			remoteFunctions: true
 		},
-		vite: {
-			ssr: {
-				external: ['clsx']
-			}
-		}
 	},
 	compilerOptions: {
 		experimental: {
