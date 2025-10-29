@@ -16,7 +16,6 @@
 	const startIndex = $derived((currentPage - 1) * ITEMS_PER_PAGE);
 	const endIndex = $derived(startIndex + ITEMS_PER_PAGE);
 	const currentRankings = $derived(data?.rankings.slice(startIndex, endIndex) || []);
-	$inspect(currentRankings);
 
 	function handlePageChange(newPage: number) {
 		currentPage = newPage;
