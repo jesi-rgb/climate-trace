@@ -10,6 +10,11 @@ const config = {
 		adapter: adapter(),
 		experimental: {
 			remoteFunctions: true
+		},
+		vite: {
+			ssr: {
+				external: ['clsx']
+			}
 		}
 	},
 	compilerOptions: {
