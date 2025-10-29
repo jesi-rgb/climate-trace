@@ -5,9 +5,11 @@
 	import { getSectors, getSubsectors, getSubsectorDetails } from '../api/sector.remote';
 	import { fN, formatSector } from '$lib/utils';
 	import { Pagination } from '$lib/components/ui';
+	import Table from '$lib/components/ui/Table.svelte';
 	import Sidebar from '$lib/components/sources/Sidebar.svelte';
 	import { onMount } from 'svelte';
 	import type { SubSector } from '$lib/api';
+	import type { ColumnDef } from '@tanstack/svelte-table';
 
 	const ITEMS_PER_PAGE = 20;
 	const FETCH_CHUNK_SIZE = 10000;
@@ -65,10 +67,9 @@
 		})
 	);
 
-	let paginatedSources = $derived.by(() => {
+	let filteredSources = $derived.by(() => {
 		if (!chunkData || chunkData === null) return [];
-		const indexInChunk = ((currentPage - 1) * ITEMS_PER_PAGE) % FETCH_CHUNK_SIZE;
-		let sources = chunkData.slice(indexInChunk, indexInChunk + ITEMS_PER_PAGE);
+		let sources = chunkData;
 
 		if (searchTerm) {
 			sources = sources.filter((s) => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -113,6 +114,73 @@
 	}
 
 	let loading = $derived($effect.pending());
+
+	type Source = (typeof filteredSources)[0];
+
+	const columns: ColumnDef<Source>[] = [
+		{
+			accessorKey: 'name',
+			header: 'Name',
+			cell: (info) => {
+				const source = info.row.original;
+				return `<a href="/source/${source.id}" class="link link-hover">${info.getValue()}</a>`;
+			},
+			meta: { className: 'w-60' },
+			enableSorting: true
+		},
+		{
+			accessorKey: 'sector',
+			header: 'Sector',
+			cell: (info) => {
+				const source = info.row.original;
+				return `<a href="/sector/${source.sector}" class="link link-hover"
+					>${formatSector(info.getValue() as string)}</a
+				>`;
+			},
+			enableSorting: true
+		},
+		{
+			accessorKey: 'subsector',
+			header: 'Subsector',
+			cell: (info) => formatSector(info.getValue() as string),
+			enableSorting: true
+		},
+		{
+			accessorKey: 'country',
+			header: 'Country',
+			cell: (info) => {
+				const source = info.row.original;
+				return `<a href="/country/${source.country}" class="link link-hover">${info.getValue()}</a>`;
+			},
+			enableSorting: true
+		},
+		{
+			accessorKey: 'assetType',
+			header: 'Asset Type',
+			cell: (info) => info.getValue(),
+			enableSorting: true
+		},
+		{
+			accessorKey: 'sourceType',
+			header: 'Source Type',
+			cell: (info) => formatSector(info.getValue() as string),
+			enableSorting: true
+		},
+		{
+			accessorKey: 'emissionsQuantity',
+			header: 'Emissions (CO₂e t)',
+			cell: (info) => fN(info.getValue() as number),
+			meta: { className: 'tabular-nums text-right place-items-end' },
+			enableSorting: true
+		},
+		{
+			accessorKey: 'year',
+			header: 'Year',
+			cell: (info) => info.getValue(),
+			meta: { className: 'text-right tabular-nums place-items-end' },
+			enableSorting: true
+		}
+	];
 </script>
 
 <div class="drawer drawer-open h-full">
@@ -184,59 +252,14 @@
 				</div>
 			</div>
 
-			<div class="mt-6 flex items-baseline justify-end">
-				{#if loading}
+			{#if loading}
+				<div class="flex justify-center py-8">
 					<div class="loading loading-bars"></div>
-				{/if}
-				<Pagination
-					count={totalCount}
-					perPage={ITEMS_PER_PAGE}
-					bind:page={currentPage}
-					onPageChange={handlePageChange}
-				/>
-			</div>
-			{#if paginatedSources.length > 0}
-				<div class="overflow-x-auto">
-					<table class="table">
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Sector</th>
-								<th>Subsector</th>
-								<th>Country</th>
-								<th>Asset Type</th>
-								<th>Source Type</th>
-								<th>Emissions (tonnes CO₂e)</th>
-								<th>Year</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each paginatedSources as source}
-								<tr class="hover">
-									<td>
-										<a href="/source/{source.id}" class="link link-hover">
-											{source.name}
-										</a>
-									</td>
-									<td>
-										<a href="/sector/{source.sector}" class="link link-hover">
-											{formatSector(source.sector)}
-										</a>
-									</td>
-									<td>{formatSector(source.subsector)}</td>
-									<td>
-										<a href="/country/{source.country}" class="link link-hover">
-											{source.country}
-										</a>
-									</td>
-									<td>{source.assetType}</td>
-									<td>{formatSector(source.sourceType)}</td>
-									<td class="tabular-nums text-right">{fN(source.emissionsQuantity)}</td>
-									<td>{source.year}</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
+				</div>
+			{/if}
+			{#if filteredSources.length > 0}
+				<div class="py-section-y">
+					<Table data={filteredSources} {columns} pagination={true} pageSize={ITEMS_PER_PAGE} />
 				</div>
 			{:else}
 				<div class="text-center my-20 text-xl space-y-4">

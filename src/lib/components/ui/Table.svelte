@@ -107,7 +107,7 @@
 							{@const cellMeta = cell.column.columnDef.meta}
 							<td class={getClassName(cellMeta)}>
 								{#if cell.column.columnDef.cell && typeof cell.column.columnDef.cell === 'function'}
-									{cell.column.columnDef.cell(cell.getContext())}
+									{@html cell.column.columnDef.cell(cell.getContext())}
 								{:else}
 									{cell.getValue()}
 								{/if}
