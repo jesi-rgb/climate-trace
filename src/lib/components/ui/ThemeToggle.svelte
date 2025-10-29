@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Sun, Moon } from 'phosphor-svelte';
-	let globalState = {};
 
 	const applyTheme = (newTheme: string) => {
 		if (newTheme === 'system') {

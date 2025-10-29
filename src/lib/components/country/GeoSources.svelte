@@ -19,6 +19,7 @@
 
 	let sources = $state<SourceDetails[]>([]);
 	let loading = $state(true);
+	let streaming = $state(true);
 
 	const rotate: [number, number, number] = $state([0, 0, 0]);
 	let rotationInterval: NodeJS.Timeout | null = null;
@@ -38,24 +39,26 @@
 	onMount(async () => {
 		try {
 			console.log('GeoSources: Starting to stream sources for', countryCode);
+			streaming = true;
 
-			const BATCH_SIZE = 10;
+			const BATCH_SIZE = 150;
 			let batch: SourceDetails[] = [];
 
 			for await (const source of streamCountrySources(countryCode)) {
 				batch.push(source);
 
 				if (batch.length >= BATCH_SIZE) {
-					sources = [...sources, ...batch];
+					sources.push(...batch);
 					batch = [];
 				}
 			}
 
 			if (batch.length > 0) {
-				sources = [...sources, ...batch];
+				sources.push(...batch);
 			}
 
 			if (rotationInterval) clearInterval(rotationInterval);
+			streaming = false;
 		} catch (error) {
 			console.error('GeoSources: Failed to load sources:', error);
 		} finally {
@@ -132,6 +135,7 @@
 		{:else if globeSources.length > 0}
 			<div class="px-4 py-2">
 				<Map
+					{streaming}
 					initialLat={centerCoords.lat}
 					initialLon={centerCoords.lon}
 					data={convertToGeoJSON(globeSources)}
@@ -159,7 +163,8 @@
 	{/snippet}
 	{#snippet footnote()}
 		<Body size="12" class="text-muted text-center">
-			{globeSources.length} emission sources over {countryCode}
+			{streaming && globeSources.length > 0 ? 'Streaming' : ''}
+			{globeSources.length == 0 ? 'Loading' : globeSources.length} emission sources over {countryCode}
 		</Body>
 	{/snippet}
 </Card>

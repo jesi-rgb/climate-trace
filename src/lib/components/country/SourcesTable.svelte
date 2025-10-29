@@ -26,7 +26,7 @@
 	{#snippet content()}
 		<div class="flex flex-col gap-4">
 			<div class="overflow-x-auto">
-				<table class="table table-sm table-zebra">
+				<table class="table table-zebra">
 					<thead>
 						<tr>
 							<th class="text-right w-20">#</th>
@@ -42,7 +42,7 @@
 								<td>
 									<a href="/source/{source.id}" class="link link-hover">{source.name}</a>
 								</td>
-								<td class="text-sm text-muted">{formatSector(source.name)}</td>
+								<td class="text-muted">{formatSector(source.name)}</td>
 								<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
 							</tr>
 						{/each}

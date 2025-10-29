@@ -11,7 +11,7 @@
 	let container: HTMLElement | null = $state(null);
 	let isMapReady = $state(false);
 
-	let { data, initialLat = 0, initialLon = 0 } = $props();
+	let { data, streaming, initialLat = 0, initialLon = 0 } = $props();
 
 	function renderPopup(
 		e:
@@ -38,9 +38,13 @@
 	}
 
 	onMount(async () => {
+		const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches
+			? 'barelycookie'
+			: 'reallol';
+
 		map = new maplibregl.Map({
 			container: 'map',
-			style: '/freemap.json',
+			style: systemPreference === 'reallol' ? '/freemap.json' : '/freemap-dark.json',
 			center: [initialLon, initialLat],
 			zoom: 3
 		});
@@ -121,8 +125,33 @@
 	});
 </script>
 
-<div
-	id="map"
-	class="h-full w-full min-h-[400px] border border-subtle
-	rounded-field"
-></div>
+<div class="relative w-full h-full min-h-[400px]">
+	{#if streaming}
+		<div
+			class="pulsing absolute rounded-field border-2 border-primary pointer-events-none
+			inset-0"
+		></div>
+	{/if}
+	<div
+		id="map"
+		class="h-full w-full min-h-[400px] border border-subtle
+		rounded-field"
+	></div>
+</div>
+
+<style>
+	@keyframes hardPulse {
+		0%,
+		100% {
+			box-shadow: 0 0 8px 2px color-mix(in srgb, var(--color-primary), transparent 60%);
+		}
+		50% {
+			box-shadow: 0 0 20px 6px color-mix(in srgb, var(--color-primary), transparent 80%);
+		}
+	}
+
+	.pulsing {
+		border-style: solid;
+		animation: hardPulse 1s ease-in-out infinite;
+	}
+</style>
