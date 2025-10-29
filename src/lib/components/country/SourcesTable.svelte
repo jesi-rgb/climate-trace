@@ -1,11 +1,25 @@
 <script lang="ts">
-	import { Factory, MapPin } from 'phosphor-svelte';
+	import { Campfire, Factory, MapPin } from 'phosphor-svelte';
 	import Card from '../ui/Card.svelte';
 	import Heading from '../type/Heading.svelte';
 	import { fN, formatSector } from '$lib/utils';
 	import { Pagination } from '$lib/components/ui';
+	import type { SourceDetails } from '$lib/api';
 
-	let { countryName, globeSources } = $props();
+	interface Props {
+		countryName: string;
+		globeSources: {
+			id: number;
+			name: string;
+			lat: number;
+			lon: number;
+			sector: string;
+			subsector: string;
+			emissionsQuantity: number;
+		}[];
+	}
+
+	let { countryName, globeSources }: Props = $props();
 
 	const ITEMS_PER_PAGE = 10;
 
@@ -18,7 +32,7 @@
 <Card class="col-span-full">
 	{#snippet title()}
 		<div class="flex items-center gap-2">
-			<Factory size={24} weight="bold" class="text-primary" />
+			<Campfire size={24} weight="fill" class="text-primary" />
 			<Heading size="h3">Top Emission Sources in {countryName}</Heading>
 		</div>
 	{/snippet}
@@ -32,6 +46,7 @@
 							<th class="text-right w-20">#</th>
 							<th>Source Name</th>
 							<th>Sector</th>
+							<th>Subsector</th>
 							<th class="text-right">Emissions</th>
 						</tr>
 					</thead>
@@ -42,8 +57,12 @@
 								<td>
 									<a href="/source/{source.id}" class="link link-hover">{source.name}</a>
 								</td>
-								<td class="text-muted">{formatSector(source.name)}</td>
-								<td class="text-right tabular-nums">{fN(source.emissionsQuantity)}</td>
+								<td class="text-muted">{formatSector(source.sector)}</td>
+								<td class="text-muted">{formatSector(source.subsector)}</td>
+								<td
+									class="text-right
+									tabular-nums">{fN(source.emissionsQuantity)}</td
+								>
 							</tr>
 						{/each}
 					</tbody>

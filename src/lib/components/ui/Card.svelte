@@ -13,7 +13,7 @@
 
 	let variantClasses = $derived(
 		variant === 'gradient'
-			? 'bg-gradient-to-t from-base-200-muted shadow-sm shadow-subtle/10'
+			? 'bg-gradient-to-t from-base-200-muted dark:from-base-200 dark:to-base-100 shadow-sm shadow-subtle/10'
 			: 'bg-base-200'
 	);
 </script>

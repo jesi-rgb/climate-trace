@@ -81,7 +81,9 @@
 				name: s.name,
 				lat: s.centroid.latitude,
 				lon: s.centroid.longitude,
-				emissionsQuantity: s.emissions.reduce((sum, e) => sum + e.emissionsQuantity, 0)
+				emissionsQuantity: s.emissions.reduce((sum, e) => sum + e.emissionsQuantity, 0),
+				sector: s.sector,
+				subsector: s.subsector
 			}));
 	});
 

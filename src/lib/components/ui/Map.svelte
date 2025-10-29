@@ -92,7 +92,7 @@
 					],
 					'circle-opacity': 0.8,
 					'circle-stroke-width': 1,
-					'circle-stroke-color': '#fff'
+					'circle-stroke-color': getCssVariableHex('--color-base-100')
 				}
 			});
 

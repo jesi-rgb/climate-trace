@@ -1,0 +1,14 @@
+[build]
+  command = "bun run build"
+  publish = "build"
+
+[functions]
+  node_bundler = "esbuild"
+  # Maximum timeout for functions (26 seconds on paid plans, 10 seconds on free tier)
+  # The streaming endpoint needs more time to process all sources
+  included_files = ["src/**"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
