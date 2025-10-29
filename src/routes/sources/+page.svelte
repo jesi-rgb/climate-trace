@@ -118,7 +118,7 @@
 <div class="drawer drawer-open h-full">
 	<input id="sources-drawer" type="checkbox" class="drawer-toggle" />
 	<div class="drawer-content overflow-y-auto">
-		<div class="container mx-auto">
+		<div class="">
 			<div class="px-section-x py-section-y">
 				<div class="mb-6">
 					<h1 class="text-3xl font-bold">Sources</h1>

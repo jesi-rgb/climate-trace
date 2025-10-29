@@ -26,10 +26,10 @@
 	{#snippet content()}
 		<div class="flex flex-col gap-4">
 			<div class="overflow-x-auto">
-				<table class="table table-sm">
+				<table class="table table-sm table-zebra">
 					<thead>
 						<tr>
-							<th class="w-12">#</th>
+							<th class="text-right w-20">#</th>
 							<th>Source Name</th>
 							<th>Sector</th>
 							<th class="text-right">Emissions</th>
@@ -38,7 +38,7 @@
 					<tbody>
 						{#each currentSources as source, idx}
 							<tr class="hover">
-								<td class="text-center opacity-60">{startIndex + idx + 1}</td>
+								<td class="text-muted font-mono text-right">{source.id}</td>
 								<td>
 									<a href="/source/{source.id}" class="link link-hover">{source.name}</a>
 								</td>

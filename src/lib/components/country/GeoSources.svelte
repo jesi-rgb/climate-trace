@@ -136,10 +136,6 @@
 					initialLon={centerCoords.lon}
 					data={convertToGeoJSON(globeSources)}
 				/>
-
-				<Body size="12" class="mt-2 text-muted text-center">
-					{globeSources.length} emission sources over {countryCode}
-				</Body>
 			</div>
 		{:else}
 			<div class="relative flex items-center justify-center h-full">
@@ -160,6 +156,11 @@
 				>
 			</div>
 		{/if}
+	{/snippet}
+	{#snippet footnote()}
+		<Body size="12" class="text-muted text-center">
+			{globeSources.length} emission sources over {countryCode}
+		</Body>
 	{/snippet}
 </Card>
 

@@ -2,6 +2,9 @@ import { ct } from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+const HIGH_PASS = 10;
+const LIMIT = 100000;
+
 export const GET: RequestHandler = async ({ url }) => {
 	const countryCode = url.searchParams.get('country');
 
@@ -14,12 +17,14 @@ export const GET: RequestHandler = async ({ url }) => {
 	const stream = new ReadableStream({
 		async start(controller) {
 			try {
-				const cities = await ct('searchCities', { country: countryCode, limit: 100000 });
+				const cities = await ct('searchCities', { country: countryCode, limit: LIMIT });
 
 				for (const city of cities) {
 					if (aborted) break;
 
-					const sources = await ct('getSources', { cityId: city.id });
+					const sourcesRaw = await ct('getSources', { cityId: city.id, limit: LIMIT });
+					const sources = sourcesRaw?.filter((s) => s.emissionsQuantity > HIGH_PASS);
+
 					if (!sources) continue;
 
 					for (let i = 0; i < sources.length; i += 50) {
@@ -50,7 +55,7 @@ export const GET: RequestHandler = async ({ url }) => {
 					console.error('Stream error:', err);
 					try {
 						controller.error(err);
-					} catch {}
+					} catch { }
 				}
 			}
 		},
