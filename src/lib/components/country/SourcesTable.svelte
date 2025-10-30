@@ -33,12 +33,18 @@
 		{
 			accessorKey: 'name',
 			header: 'Source Name',
-			cell: (info) => info.getValue()
+			cell: (info) => {
+				const source = info.row.original;
+				return `<a href="/source/${source.id}" class="link link-hover">${info.getValue()}</a>`;
+			}
 		},
 		{
 			accessorKey: 'sector',
 			header: 'Sector',
-			cell: (info) => formatSector(info.getValue() as string),
+			cell: (info) => {
+				const source = info.row.original;
+				return `<a href="/sector/${source.sector}" class="link link-hover">${formatSector(info.getValue() as string)}</a>`;
+			},
 			meta: { className: 'text-muted' }
 		},
 		{
