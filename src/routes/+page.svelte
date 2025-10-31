@@ -101,7 +101,7 @@
 					<div class="font-bold text-secondary">
 						{fN(topSources.length * 100, 0)}+
 					</div>
-					<p class="text-[9px] text-muted">Tracked worldwide</p>
+					<p class="text-[9px] text-muted">Mrs worldwide</p>
 				</div>
 			</div>
 
