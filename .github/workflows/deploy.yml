@@ -24,4 +24,4 @@ jobs:
       - name: Deploy
         env:
           KRAFTCLOUD_TOKEN: ${{ secrets.UKC_TOKEN }}
-        run: kraft cloud deploy -p 443:3000 -M 2048 --replace .
+        run: kraft cloud deploy -p 443:3000 -M 2048 .
