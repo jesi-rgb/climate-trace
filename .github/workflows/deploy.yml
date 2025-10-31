@@ -7,6 +7,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      UKC_TOKEN: ${{ secrets.UKC_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
@@ -22,6 +24,4 @@ jobs:
       - run: bun run build
       
       - name: Deploy
-        env:
-          UKC_TOKEN: ${{ secrets.UKC_TOKEN }}
         run: kraft cloud deploy -p 443:3000 -M 2048 --metro fra .
