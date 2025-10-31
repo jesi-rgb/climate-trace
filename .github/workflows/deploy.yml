@@ -13,9 +13,8 @@ jobs:
       
       - name: Install KraftKit
         run: |
-          wget https://github.com/unikraft/kraftkit/releases/latest/download/kraft_linux_amd64 -O kraft
-          chmod +x kraft
-          sudo mv kraft /usr/local/bin/
+          curl -sSfL https://get.kraftkit.sh | sudo KRAFTKIT_NO_PROMPT=true sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
       
       - run: bun install
       - run: bun run build
