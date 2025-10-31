@@ -109,7 +109,7 @@
 				<h2 class="text-[10px] font-medium text-muted uppercase tracking-wide">Sectors</h2>
 				<div class="mt-1">
 					<div class="font-bold text-accent">{sectors.length}</div>
-					<p class="text-[9px] text-muted">Industrial sectors</p>
+					<p class="text-[9px] text-muted">Industrial fuckers</p>
 				</div>
 			</div>
 
