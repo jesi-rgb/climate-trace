@@ -1,0 +1,23 @@
+# .github/workflows/deploy.yml
+name: Deploy to Unikraft Cloud
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      
+      - run: bun install
+      - run: bun run build
+      
+      - name: Deploy
+        env:
+          KRAFTCLOUD_TOKEN: ${{ secrets.KRAFTCLOUD_TOKEN }}
+        run: |
+          curl -sSfL https://get.kraftkit.sh | sh
+          kraft cloud deploy -p 443:3000 -M 2048 --replace .
