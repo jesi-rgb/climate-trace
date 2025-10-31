@@ -13,14 +13,7 @@ jobs:
       
       - name: Install KraftKit
         run: |
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "x86_64" ]; then ARCH="amd64"; fi
-          if [ "$ARCH" = "aarch64" ]; then ARCH="arm64"; fi
-
-          VERSION=$(curl -sL https://api.github.com/repos/unikraft/kraftkit/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
-
-          wget -q "https://github.com/unikraft/kraftkit/releases/download/${VERSION}/kraft_${VERSION}_linux_${ARCH}.tar.gz"
-          tar xzf "kraft_${VERSION}_linux_${ARCH}.tar.gz"
+          wget -q https://github.com/unikraft/kraftkit/releases/download/v0.12.3/kraft_linux_amd64 -O kraft
           chmod +x kraft
           sudo mv kraft /usr/local/bin/
       
