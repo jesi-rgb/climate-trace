@@ -1,0 +1,11 @@
+spec: v0.6
+
+runtime: base-compat:latest
+
+rootfs: ./Dockerfile
+
+cmd: ["/usr/bin/bun", "run", "/app/build/index.js"]
+
+env:
+  HOST: "0.0.0.0"
+  PORT: "3000"
