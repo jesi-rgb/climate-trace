@@ -42,12 +42,13 @@
 		ChartBar
 	};
 	import { Plot, LineY, Dot, formatMonth } from 'svelteplot';
-	import { Pagination, Card, Tooltip } from '$lib/components/ui';
+	import { Card, Tooltip, Table } from '$lib/components/ui';
 	import Figure from '$lib/components/type/Figure.svelte';
 	import { ct } from '$lib/api';
 	import Heading from '$lib/components/type/Heading.svelte';
-
-	const ITEMS_PER_PAGE = 10;
+	import Body from '$lib/components/type/Body.svelte';
+	import EmissionsBarChart from '$lib/components/charts/EmissionsBarChart.svelte';
+	import type { ColumnDef } from '@tanstack/svelte-table';
 
 	let sourceId = $derived(Number(page.params.id));
 
@@ -67,8 +68,6 @@
 
 	let source = $derived(yearlyData[yearlyData.length - 1]);
 	let countrySourceDetails = $derived(await ct('getCountryDetails', { country: source.country }));
-
-	let currentPage = $state(1);
 
 	let allEmissions = $derived.by(() => {
 		return yearlyData.flatMap((data) => {
@@ -105,9 +104,38 @@
 			.sort((a, b) => b.quantity - a.quantity);
 	});
 
-	const startIndex = $derived((currentPage - 1) * ITEMS_PER_PAGE);
-	const endIndex = $derived(startIndex + ITEMS_PER_PAGE);
-	const currentEmissions = $derived(allEmissions.slice(startIndex, endIndex));
+	const columns: ColumnDef<any>[] = [
+		{
+			accessorKey: 'year',
+			header: 'Year'
+		},
+		{
+			accessorKey: 'month',
+			header: 'Month',
+			cell: (info) => info.getValue() || '-'
+		},
+		{
+			accessorKey: 'emissionsQuantity',
+			header: 'Emissions',
+			cell: (info) => fN(info.getValue() as number),
+			meta: { className: 'text-right tabular-nums place-items-end' }
+		},
+		{
+			accessorKey: 'gas',
+			header: 'Gas',
+			meta: { className: 'text-sm opacity-70' },
+			enableSorting: false
+		},
+		{
+			accessorKey: 'activity',
+			header: 'Activity',
+			cell: (info) => {
+				const row = info.row.original;
+				return row.activity ? `${fN(row.activity)} ${row.activityUnits || ''}` : '-';
+			},
+			meta: { className: 'text-right tabular-nums text-xs place-items-end' }
+		}
+	];
 </script>
 
 {#if $effect.pending()}
@@ -239,7 +267,6 @@
 				<Card>
 					{#snippet title()}
 						<div class="flex items-center gap-2">
-							<ChartLine size={24} weight="bold" class="text-accent" />
 							<h2 class="card-title">Emissions Timeline</h2>
 						</div>
 					{/snippet}
@@ -294,32 +321,24 @@
 				<Card>
 					{#snippet title()}
 						<div class="flex items-center gap-2">
-							<Flame size={24} weight="fill" class="text-error" />
 							<h2 class="card-title">Gas Breakdown</h2>
 						</div>
 					{/snippet}
 
 					{#snippet content()}
-						<div class="px-4 pb-4 space-y-3">
-							{#each gasBreakdown as gas}
-								<div>
-									<div class="flex justify-between items-center mb-1">
-										<span class="text-sm font-medium">{gas.gas}</span>
-										<span class="text-sm font-bold tabular-nums">{fN(gas.quantity)}</span>
-									</div>
-									<div class="flex items-center gap-2">
-										<progress
-											class="progress progress-error w-full"
-											value={gas.percentage}
-											max="100"
-										></progress>
-										<span class="text-xs opacity-60 tabular-nums min-w-[3rem]"
-											>{gas.percentage.toFixed(1)}%</span
-										>
-									</div>
-								</div>
-							{/each}
+						<div class="px-4">
+							<EmissionsBarChart
+								data={gasBreakdown.map((g) => ({
+									sector: g.gas,
+									emissions: g.quantity
+								}))}
+								formatValue={fN}
+							/>
 						</div>
+					{/snippet}
+
+					{#snippet footnote()}
+						<Body size="12" class="opacity-60">Emissions in tonnes CO₂e</Body>
 					{/snippet}
 				</Card>
 			{/if}
@@ -329,7 +348,6 @@
 			<Card class="mb-6">
 				{#snippet title()}
 					<div class="flex items-center gap-2">
-						<Users size={24} weight="fill" class="text-info" />
 						<h2 class="card-title">Owners</h2>
 					</div>
 				{/snippet}
@@ -347,50 +365,12 @@
 		<Card>
 			{#snippet title()}
 				<div class="flex items-center gap-2">
-					<MapPin size={18} weight="fill" class="text-primary" />
 					<h2 class="card-title text-lg">Detailed Emissions Timeline</h2>
 				</div>
 			{/snippet}
 
 			{#snippet content()}
-				<div class="overflow-x-auto">
-					<table class="table table-sm">
-						<thead>
-							<tr>
-								<th>Year</th>
-								<th>Month</th>
-								<th class="text-right">Emissions</th>
-								<th>Gas</th>
-								<th class="text-right">Activity</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each currentEmissions as emission}
-								<tr class="hover">
-									<td>{emission.year}</td>
-									<td>{emission.month || '-'}</td>
-									<td class="text-right tabular-nums">{fN(emission.emissionsQuantity)}</td>
-									<td class="text-sm opacity-70">{emission.gas}</td>
-									<td class="text-right tabular-nums text-xs">
-										{#if emission.activity}
-											{fN(emission.activity)} {emission.activityUnits || ''}
-										{:else}
-											-
-										{/if}
-									</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-
-				<div class="mt-4 mb-2 pr-section-x">
-					<Pagination
-						count={allEmissions.length}
-						perPage={ITEMS_PER_PAGE}
-						bind:page={currentPage}
-					/>
-				</div>
+				<Table data={allEmissions} {columns} pagination={true} pageSize={10} />
 			{/snippet}
 		</Card>
 	</div>

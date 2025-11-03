@@ -8,6 +8,7 @@
 	import Body from '$lib/components/type/Body.svelte';
 	import Figure from '$lib/components/type/Figure.svelte';
 	import { Card } from '$lib/components/ui';
+	import EmissionsBarChart from '$lib/components/charts/EmissionsBarChart.svelte';
 
 	let sector = $derived(page.params.sector!);
 	let details = $derived(await getSectorDetails(sector));
@@ -86,28 +87,19 @@
 					{/snippet}
 
 					{#snippet content()}
-						<div class="px-4 pb-4 space-y-3">
-							{#each topSubsectors as subsector}
-								<div>
-									<div class="flex justify-between items-center mb-1">
-										<span class="text-sm font-medium">{formatSector(subsector.subsector)}</span>
-										<span class="text-sm font-bold tabular-nums"
-											>{fN(subsector.emissionsQuantity)}</span
-										>
-									</div>
-									<div class="flex items-center gap-2">
-										<progress
-											class="progress progress-secondary w-full"
-											value={subsector.percentage}
-											max="100"
-										></progress>
-										<span class="text-xs opacity-60 tabular-nums min-w-[3rem]"
-											>{subsector.percentage.toFixed(1)}%</span
-										>
-									</div>
-								</div>
-							{/each}
+						<div class="px-4">
+							<EmissionsBarChart
+								data={topSubsectors.map((s) => ({
+									sector: formatSector(s.subsector),
+									emissions: s.emissionsQuantity
+								}))}
+								formatValue={fN}
+							/>
 						</div>
+					{/snippet}
+
+					{#snippet footnote()}
+						<Body size="12" class="opacity-60">Emissions in tonnes CO₂e</Body>
 					{/snippet}
 				</Card>
 			{/if}
