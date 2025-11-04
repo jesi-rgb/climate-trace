@@ -158,52 +158,39 @@
 {:else}
 	<div class="px-section-x py-section-y">
 		<div class="mb-4">
-			<div class="breadcrumbs text-sm mb-2">
+			<div class="breadcrumbs text-sm mb-2 text-muted">
 				<ul>
 					<li><a href="/" class="link link-hover">Home</a></li>
 					<li><a href="/sources" class="link link-hover">Sources</a></li>
+					<li>
+						<a
+							href="/country/{source.country}"
+							class="link
+						link-hover">{source.country}</a
+						>
+					</li>
 					<li>{source.name || 'Unknown Source'}</li>
 				</ul>
 			</div>
 
-			<div class="flex items-center gap-4">
-				<h1 class="text-4xl font-bold">{source.name || 'Unknown Source'}</h1>
-				<div class="badge badge-primary badge-lg">{formatSector(source.subsector)}</div>
+			<div class="flex items-baseline gap-4">
+				<Heading size="h1">{source.name || 'Unknown Source'}</Heading>
+
+				<Body class="text-muted" size="16">
+					<a href="/sector/{source.sector}" class="link link-hover">{formatSector(source.sector)}</a
+					>
+					→ {formatSector(source.subsector)}</Body
+				>
 			</div>
-			<p class="text-lg opacity-70 mt-2">{formatSector(source.sector)}</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-4 gap-2 join-horizontal mb-4">
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-2 join-horizontal mb-4">
 			<Figure
 				icon={Flame}
 				title="Total Emissions"
 				value={fN(totalEmissions)}
 				subtitle="tonnes CO₂e (2021-2024)"
-				color="warning"
-			/>
-
-			<Tooltip>
-				{#snippet trigger()}
-					<Figure
-						icon={Globe}
-						title="Country"
-						value={source.country}
-						subtitle="location"
-						color="info"
-						href="/country/{source.country}"
-					/>
-				{/snippet}
-				<Heading>
-					{countrySourceDetails.name}
-				</Heading>
-			</Tooltip>
-
-			<Figure
-				icon={Factory}
-				title="Sector"
-				value={formatSector(source.sector)}
-				subtitle="industry type"
-				color="secondary"
+				color="error"
 			/>
 
 			{#if source.totals?.activity}
@@ -213,7 +200,28 @@
 					title={getActivityLabel(source.totals.activityUnits)}
 					value={formatActivity(source.totals.activity, source.totals.activityUnits)}
 					subtitle={source.totals.activityUnits}
-					color="neutral-content"
+				/>
+			{/if}
+			{#if gasBreakdown.length === 1}
+				<Figure
+					icon={Flame}
+					title="Gas Type"
+					value={fN(gasBreakdown[0].quantity)}
+					subtitle="{gasBreakdown[0].gas}, tonnes"
+					color="secondary"
+				/>
+			{/if}
+
+			{#if source.totals?.emissionsFactor && source.totals?.activityUnits}
+				<Figure
+					icon={Flame}
+					title="Emissions Intensity"
+					value={formatEmissionsFactor(source.totals.emissionsFactor, source.totals.activityUnits)}
+					subtitle={getEmissionsFactorUnit(
+						source.totals.emissionsFactor,
+						source.totals.activityUnits
+					)}
+					color="error"
 				/>
 			{/if}
 
@@ -227,28 +235,6 @@
 						source.totals.capacity
 					)}
 					subtitle={getCapacityTooltip(source.totals.activityUnits)}
-					color="info"
-				/>
-			{/if}
-			{#if source.totals?.emissionsFactor && source.totals?.activityUnits}
-				<Figure
-					icon={Flame}
-					title="Emissions Intensity"
-					value={formatEmissionsFactor(source.totals.emissionsFactor, source.totals.activityUnits)}
-					subtitle={getEmissionsFactorUnit(
-						source.totals.emissionsFactor,
-						source.totals.activityUnits
-					)}
-					color="error"
-				/>
-			{/if}
-			{#if gasBreakdown.length === 1}
-				<Figure
-					icon={Flame}
-					title="Gas Type"
-					value={fN(gasBreakdown[0].quantity)}
-					subtitle="{gasBreakdown[0].gas}, tonnes"
-					color="warning"
 				/>
 			{/if}
 			{#if source.subsectorRanks && source.subsectorRanks.length > 0}

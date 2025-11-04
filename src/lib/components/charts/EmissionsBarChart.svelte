@@ -11,7 +11,7 @@
 
 <Plot
 	height={300}
-	marginLeft={100}
+	marginLeft={130}
 	marginRight={30}
 	marginBottom={40}
 	y={{

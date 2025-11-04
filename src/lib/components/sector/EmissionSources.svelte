@@ -5,6 +5,7 @@
 	import Table from '$lib/components/ui/Table.svelte';
 	import type { SourceSummary } from '$lib/api';
 	import type { ColumnDef } from '@tanstack/svelte-table';
+	import Heading from '../type/Heading.svelte';
 
 	interface Props {
 		sources: SourceSummary[];
@@ -72,8 +73,8 @@
 <Card>
 	{#snippet title()}
 		<div class="flex items-center gap-2">
-			<Factory size={24} weight="bold" class="text-warning" />
-			<h2 class="card-title">Top Emission Sources</h2>
+			<Factory size={24} weight="fill" class="text-primary" />
+			<Heading size="h2">Top Emission Sources</Heading>
 		</div>
 	{/snippet}
 
@@ -81,7 +82,6 @@
 		<div class="px-4 pb-4 space-y-4">
 			<div>
 				<div class="flex items-center justify-between mb-2">
-					<span class="label-text font-medium">Filter by Subsector</span>
 					{#if selectedSubsector}
 						<button
 							type="button"

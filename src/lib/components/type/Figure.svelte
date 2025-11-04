@@ -71,10 +71,10 @@
 				>
 			</a>
 		{:else}
-			<Number size="medium">{value}</Number>
+			<Number size="small">{value}</Number>
 		{/if}
 		{#if subtitle}
-			<Body size="16" class="opacity-60">{subtitle}</Body>
+			<Body size="16" class="text-muted">{subtitle}</Body>
 		{/if}
 	</div>
 </figure>

@@ -9,6 +9,8 @@
 	import Figure from '$lib/components/type/Figure.svelte';
 	import { Card } from '$lib/components/ui';
 	import EmissionsBarChart from '$lib/components/charts/EmissionsBarChart.svelte';
+	import { Plot, Pointer, RuleX, RuleY } from 'svelteplot';
+	import { BarY } from 'svelteplot';
 
 	let sector = $derived(page.params.sector!);
 	let details = $derived(await getSectorDetails(sector));
@@ -81,20 +83,46 @@
 				<Card>
 					{#snippet title()}
 						<div class="flex items-center gap-2">
-							<Factory size={24} weight="fill" class="text-secondary" />
-							<Heading as="h2" class="card-title">Top Subsectors by Emissions</Heading>
+							<Factory size={24} weight="fill" class="text-primary" />
+							<Heading as="h2">Top Subsectors by Emissions</Heading>
 						</div>
 					{/snippet}
 
 					{#snippet content()}
-						<div class="px-4">
-							<EmissionsBarChart
-								data={topSubsectors.map((s) => ({
-									sector: formatSector(s.subsector),
-									emissions: s.emissionsQuantity
-								}))}
-								formatValue={fN}
-							/>
+						<div class="px-4 h-full">
+							<Plot
+								height={800}
+								inset={20}
+								y={{
+									tickFormat(d) {
+										return fN(d.valueOf() as number);
+									},
+									grid: true,
+									nice: true
+								}}
+								x={{
+									tickRotate: -40,
+									tickFormat(d) {
+										return formatSector(d.valueOf() as string);
+									}
+								}}
+							>
+								<BarY
+									fill="var(--color-primary)"
+									fillOpacity={0.2}
+									stroke="var(--color-primary)"
+									strokeWidth={2}
+									data={topSubsectors}
+									x="subsector"
+									y="emissionsQuantity"
+									sort={{ channel: '-y' }}
+								/>
+								<Pointer data={topSubsectors} y="emissionsQuantity" maxDistance={3}>
+									{#snippet children({ data })}
+										<RuleY {data} y="emissionsQuantity" />
+									{/snippet}
+								</Pointer>
+							</Plot>
 						</div>
 					{/snippet}
 

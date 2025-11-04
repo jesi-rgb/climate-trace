@@ -11,7 +11,7 @@
 
 	let { as = null, class: className, size = 'h2', children, ...rest }: Props = $props();
 
-	const baseClass = 'font-bold font-display leading-[1.04]';
+	const baseClass = 'font-display leading-[1.04]';
 
 	const headingSizeOptions = {
 		h1: 'text-[20px] md:text-[30px] tracking-[-0.01em]',

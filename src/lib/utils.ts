@@ -6,9 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getCssVariableHex(varName: string) {
-	const value = getComputedStyle(document.documentElement)
-		.getPropertyValue(varName)
-		.trim();
+	const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
 
 	return oklchToHex(value);
 }
@@ -17,7 +15,7 @@ function oklchToHex(oklch: string) {
 	const match = oklch.match(/oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)/);
 	if (!match) return oklch;
 
-	let [, L, C, H] = match.map(v => parseFloat(v));
+	let [, L, C, H] = match.map((v) => parseFloat(v));
 
 	L = L / 100;
 
@@ -27,7 +25,7 @@ function oklchToHex(oklch: string) {
 
 	const l = L + 0.3963377774 * a + 0.2158037573 * b;
 	const m = L - 0.1055613458 * a - 0.0638541728 * b;
-	const s = L - 0.0894841775 * a - 1.2914855480 * b;
+	const s = L - 0.0894841775 * a - 1.291485548 * b;
 
 	const l3 = l * l * l;
 	const m3 = m * m * m;
@@ -35,15 +33,15 @@ function oklchToHex(oklch: string) {
 
 	const r = 4.0767416621 * l3 - 3.3077363322 * m3 + 0.2309101289 * s3;
 	const g = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193761 * s3;
-	const bn = -0.0041960771 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+	const bn = -0.0041960771 * l3 - 0.7034186147 * m3 + 1.707614701 * s3;
 
-	const toGamma = v => v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+	const toGamma = (v) => (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055);
 
-	const [R, G, B] = [r, g, bn].map(toGamma).map(v =>
-		Math.round(Math.max(0, Math.min(1, v)) * 255)
-	);
+	const [R, G, B] = [r, g, bn]
+		.map(toGamma)
+		.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255));
 
-	return `#${[R, G, B].map(x => x.toString(16).padStart(2, '0')).join('')}`;
+	return `#${[R, G, B].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
 }
 
 export const fN = (
@@ -168,6 +166,54 @@ const unitRegistry: Record<string, UnitConfig> = {
 			multiplier: 1000,
 			baseUnit: 'tonne',
 			display: (val) => `${fN(val, 0)} kg CO₂e`
+		}
+	},
+	't of fuel': {
+		label: 'Fuel Consumption',
+		format: (val) => `${fN(val, 1)} tonnes`,
+		phosphorIcon: 'GasPump',
+		capacityMeaning: 'throughput',
+		showCapacityCard: true,
+		emissionsFactorConfig: {
+			multiplier: 1,
+			baseUnit: 't of fuel',
+			display: (val) => `${fN(val, 2)} t CO₂e`
+		}
+	},
+	flights: {
+		label: 'Flight Operations',
+		format: (val) => `${fN(Math.round(val), 0)} flights`,
+		phosphorIcon: 'Airplane',
+		capacityMeaning: 'throughput',
+		showCapacityCard: true,
+		emissionsFactorConfig: {
+			multiplier: 1,
+			baseUnit: 'flight',
+			display: (val) => `${fN(val, 2)} t CO₂e`
+		}
+	},
+	BBL: {
+		label: 'Oil Production',
+		format: (val) => `${fN(val / 1e6, 1)}M barrels`,
+		phosphorIcon: 'Drop',
+		capacityMeaning: 'throughput',
+		showCapacityCard: true,
+		emissionsFactorConfig: {
+			multiplier: 1,
+			baseUnit: 'barrel',
+			display: (val) => `${fN(val, 3)} t CO₂e`
+		}
+	},
+	'BBL per day': {
+		label: 'Daily Production Capacity',
+		format: (val) => `${fN(val / 1000, 1)}K BBL/day`,
+		phosphorIcon: 'Drop',
+		capacityMeaning: 'throughput',
+		showCapacityCard: true,
+		emissionsFactorConfig: {
+			multiplier: 1,
+			baseUnit: 'BBL/day',
+			display: (val) => `${fN(val, 2)} t CO₂e`
 		}
 	}
 };

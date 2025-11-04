@@ -7,6 +7,7 @@
 	import TrendingLineRanking from '$lib/components/charts/TrendingLineRanking.svelte';
 	import Body from '$lib/components/type/Body.svelte';
 	import Number from '$lib/components/type/Number.svelte';
+	import Heading from '$lib/components/type/Heading.svelte';
 
 	const ITEMS_PER_PAGE = 20;
 
@@ -25,7 +26,7 @@
 
 <section class="px-section-x py-section-y">
 	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold mb-4">Global Emissions Rankings</h1>
+		<Heading size="h1">Global Emissions Rankings</Heading>
 
 		<Pagination
 			count={data.rankings.length}

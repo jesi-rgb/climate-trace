@@ -10,6 +10,7 @@
 	import { onMount } from 'svelte';
 	import type { SubSector } from '$lib/api';
 	import type { ColumnDef } from '@tanstack/svelte-table';
+	import Heading from '$lib/components/type/Heading.svelte';
 
 	const ITEMS_PER_PAGE = 20;
 	const FETCH_CHUNK_SIZE = 10000;
@@ -155,12 +156,6 @@
 			enableSorting: true
 		},
 		{
-			accessorKey: 'assetType',
-			header: 'Asset Type',
-			cell: (info) => info.getValue(),
-			enableSorting: true
-		},
-		{
 			accessorKey: 'sourceType',
 			header: 'Source Type',
 			cell: (info) => formatSector(info.getValue() as string),
@@ -189,7 +184,7 @@
 		<div class="">
 			<div class="px-section-x py-section-y">
 				<div class="mb-6">
-					<h1 class="text-3xl font-bold">Sources</h1>
+					<Heading size="h1">Sources</Heading>
 					<p class="text-sm opacity-60 mt-2">
 						Showing top {totalCount.toLocaleString()} emission sources. Use filters to narrow results.
 					</p>

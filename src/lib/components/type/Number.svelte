@@ -12,7 +12,7 @@
 
 	let { as = 'p', size = 'big', class: className, children, ...rest }: Props = $props();
 
-	const baseClass = 'font-bold leading-[1.04] tabular-nums';
+	const baseClass = 'font-semibold leading-[1.04] tabular-nums';
 
 	const numberSizeOptions = {
 		huge: 'text-5xl md:text-6xl',
