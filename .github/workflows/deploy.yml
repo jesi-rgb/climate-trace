@@ -28,5 +28,5 @@ jobs:
         run: |
           export UKC_TOKEN="${{ secrets.UKC_TOKEN }}"
           kraft cloud  image delete --all
-          kraft cloud deploy -p 443:3000 -M 2048 --metro fra --rollout remove --domain climate-trace.jesirgb.com --scale-to-zero on -n "climate-trace" .
+          kraft cloud deploy -p 443:3000 -M 2048 --metro fra0 --rollout remove --domain climate-trace.jesirgb.com --scale-to-zero on -n "climate-trace" .
 
