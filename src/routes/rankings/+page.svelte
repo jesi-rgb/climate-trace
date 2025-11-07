@@ -50,7 +50,7 @@
 					<tr>
 						<th>Rank</th>
 						<th>Country</th>
-						<th class="">Trend (2015-2024)</th>
+						<th class="text-center">Trend (2015-2024)</th>
 						<th class="text-right">Emissions (tonnes CO₂e)</th>
 						<th class="text-right">Per Capita</th>
 					</tr>
