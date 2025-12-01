@@ -1,4 +1,5 @@
 <script lang="ts">
+	// comment
 	import { ct } from '$lib/api';
 	import { fN, formatSector } from '$lib/utils';
 	import Card from '$lib/components/ui/Card.svelte';
